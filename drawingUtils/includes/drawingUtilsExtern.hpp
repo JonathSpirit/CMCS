@@ -1,0 +1,14 @@
+#ifndef _CMCS_DRAW_DRAWINGUTILSEXTERN_HPP_INCLUDED
+#define _CMCS_DRAW_DRAWINGUTILSEXTERN_HPP_INCLUDED
+
+#ifndef _WIN32
+    #define CMCS_DRAWINGUTILS_API
+#else
+    #ifdef CMCS_DRAWINGUTILS_EXPORTS
+        #define CMCS_DRAWINGUTILS_API __declspec(dllexport)
+    #else
+        #define CMCS_DRAWINGUTILS_API __declspec(dllimport)
+    #endif // CMCS_DRAWINGUTILS_EXPORTS
+#endif //_WIN32
+
+#endif //_CMCS_DRAW_DRAWINGUTILSEXTERN_HPP_INCLUDED
