@@ -11,11 +11,11 @@
 
 #define NUM_OF_PORTS 3
 
+using namespace cmcs;
+
 ShareableData* gCoreData;
 std::thread* gThread;
 bool gRunning;
-
-using namespace cmcs;
 
 void ThreadUpdate()
 {
@@ -73,7 +73,7 @@ void ThreadUpdate()
 
     auto deviceData = gCoreData->get("C8051_data");
 
-    auto data = deviceData->acquirePointer<simul::device::C8051_data>();
+    auto data = deviceData->acquirePointer<device::C8051_data>();
 
     uint8_t* dataPorts[NUM_OF_PORTS] =
     {

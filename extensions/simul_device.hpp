@@ -1,11 +1,11 @@
-#ifndef _SIMUL_DEVICE_HPP_INCLUDED
-#define _SIMUL_DEVICE_HPP_INCLUDED
+#ifndef _CMCS_SIMUL_DEVICE_HPP_INCLUDED
+#define _CMCS_SIMUL_DEVICE_HPP_INCLUDED
 
 #include <string>
 #include <vector>
 #include "C_bit.hpp"
 
-namespace simul::device
+namespace cmcs::device
 {
 
 struct C8051_data
@@ -13,7 +13,7 @@ struct C8051_data
     std::string _device;
     std::vector<uint8_t> _dataFlash;
     std::vector<uint8_t> _dataRam;
-    simul::BitBank<uint8_t> _dataBit;
+    cmcs::BitBank<uint8_t> _dataBit;
     std::vector<uint8_t> _dataXRam;
     uint16_t _programCounter; //PC
     uint16_t _cursor;
@@ -23,7 +23,7 @@ struct C8051_data
     uint8_t* _registerBank; //Rn
     uint8_t* _accumulator; //A
     uint8_t* _b; //B
-    simul::Bits<uint8_t> _psw; //PSW
+    cmcs::Bits<uint8_t> _psw; //PSW
 };
 
 enum BitNamePsw
@@ -39,6 +39,6 @@ enum BitNamePsw
     BIT_PSW_CARRY = 7
 };
 
-}//simul::device
+}//cmcs::device
 
-#endif //SIMUL_DEVICE_HPP_INCLUDED
+#endif //_CMCS_SIMUL_DEVICE_HPP_INCLUDED

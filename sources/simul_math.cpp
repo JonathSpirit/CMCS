@@ -4,9 +4,8 @@
 #include <string>
 #include <sstream>
 #include <limits>
-#include <algorithm>
 
-namespace simul::math
+namespace cmcs::math
 {
 
 bool GetParity(uint32_t n)
@@ -125,5 +124,5 @@ std::size_t Split(const std::string& str, std::vector<std::string>& output, char
     return output.size();
 }
 
-}//end simul::math
+}//end cmcs::math
 

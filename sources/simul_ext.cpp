@@ -5,19 +5,19 @@
 #include <unordered_map>
 #include <SDL_loadso.h>
 
-namespace simul::ext
+namespace cmcs::ext
 {
 
 namespace
 {
 
-std::unordered_map<std::string, simul::ext::Extension> gExtensions;
+std::unordered_map<std::string, cmcs::ext::Extension> gExtensions;
 
 }//end
 
 bool LoadExtension(const std::string& filePath, ShareableData& shareableData)
 {
-    simul::ext::Extension extension;
+    cmcs::ext::Extension extension;
     extension._object = SDL_LoadObject(filePath.c_str());
 
     if (extension._object == nullptr)
@@ -28,7 +28,7 @@ bool LoadExtension(const std::string& filePath, ShareableData& shareableData)
 
     gTerminalPtr->print(S_PRINT_FORMAT("info", "Loading extension at %s ...\n"), filePath.c_str());
 
-    extension._funcRetrieveExtensionIdentity = reinterpret_cast<FunctionRetrieveExtensionIdentity>(SDL_LoadFunction(extension._object, "_Z33CMCSlib_retrieveExtensionIdentityv"));
+    extension._funcRetrieveExtensionIdentity = reinterpret_cast<FunctionRetrieveExtensionIdentity>(SDL_LoadFunction(extension._object, CMCS_EXT_FUNCDEF_RETRIEVE_EXTENSION_IDENTITY));
     if (extension._funcRetrieveExtensionIdentity == nullptr)
     {
         gTerminalPtr->print(S_PRINT_FORMAT("error", "Extension appear to not have a valid \"retrieve extension identity\" function !\n"));
@@ -52,9 +52,9 @@ bool LoadExtension(const std::string& filePath, ShareableData& shareableData)
         return false;
     }
 
-    extension._funcInit = reinterpret_cast<FunctionInit>(SDL_LoadFunction(extension._object, "_Z12CMCSlib_InitR13ShareableData"));
-    extension._funcUninit = reinterpret_cast<FunctionUninit>(SDL_LoadFunction(extension._object, "_Z14CMCSlib_Uninitv"));
-    extension._funcUpdate = reinterpret_cast<FunctionUpdate>(SDL_LoadFunction(extension._object, "_Z14CMCSlib_Updatev"));
+    extension._funcInit = reinterpret_cast<FunctionInit>(SDL_LoadFunction(extension._object, CMCS_EXT_FUNCDEF_INIT));
+    extension._funcUninit = reinterpret_cast<FunctionUninit>(SDL_LoadFunction(extension._object, CMCS_EXT_FUNCDEF_UNINIT));
+    extension._funcUpdate = reinterpret_cast<FunctionUpdate>(SDL_LoadFunction(extension._object, CMCS_EXT_FUNCDEF_UPDATE));
 
     if (extension._funcInit == nullptr || extension._funcUninit == nullptr || extension._funcUpdate == nullptr)
     {
@@ -63,14 +63,14 @@ bool LoadExtension(const std::string& filePath, ShareableData& shareableData)
         return false;
     }
 
-    extension._funcInit(shareableData);
-
-    gExtensions[extension._identity._name] = extension;
-
     gTerminalPtr->print(S_PRINT_FORMAT("info", "Extension identity :\n"));
     gTerminalPtr->print(S_PRINT_FORMAT("info", "\tName : %s\n"), extension._identity._name.c_str());
     gTerminalPtr->print(S_PRINT_FORMAT("info", "\tVersion : %s\n"), extension._identity._version.c_str());
     gTerminalPtr->print(S_PRINT_FORMAT("info", "\tAuthor : %s\n"), extension._identity._author.c_str());
+
+    extension._funcInit(shareableData);
+
+    gExtensions[extension._identity._name] = extension;
 
     return true;
 }
@@ -109,4 +109,4 @@ bool FreeExtension(const std::string& name)
     return false;
 }
 
-}//end simul::ext
+}//end cmcs::ext

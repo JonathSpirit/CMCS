@@ -9,9 +9,7 @@
 #include <fstream>
 #include <thread>
 
-namespace simul
-{
-namespace core
+namespace cmcs::core
 {
 
 device::C8051_data gDeviceData;
@@ -108,7 +106,7 @@ bool WriteCodeAsm(const std::string& pathfile)
     for (unsigned int i=0; i<gDeviceData._dataFlash.size(); ++i)
     {
         hexFile << i << " 0x" << std::hex << (unsigned short)gDeviceData._dataFlash[i] << " ";
-        hexFile << std::dec << (unsigned short)gDeviceData._dataFlash[i] << " : " << simul::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._opcode << " " << simul::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._operands << std::endl;
+        hexFile << std::dec << (unsigned short)gDeviceData._dataFlash[i] << " : " << cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._opcode << " " << cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._operands << std::endl;
     }
 
     hexFile.close();
@@ -138,18 +136,18 @@ bool LoadCodeHex(const std::string& pathfile)
         }
 
         unsigned int cursor = 1;
-        unsigned char dataSize = simul::math::HexToU8(&line[cursor]);
+        unsigned char dataSize = cmcs::math::HexToU8(&line[cursor]);
         cursor+=2;
-        unsigned short address = simul::math::HexToU16(&line[cursor]);
+        unsigned short address = cmcs::math::HexToU16(&line[cursor]);
         cursor+=4;
-        unsigned char recordType = simul::math::HexToU8(&line[cursor]);
+        unsigned char recordType = cmcs::math::HexToU8(&line[cursor]);
         cursor+=2;
 
         global_size += dataSize;
 
         switch ( recordType )
         {
-        case simul::core::RecordType::RECORDTYPE_DATA:
+        case cmcs::core::RecordType::RECORDTYPE_DATA:
             if ( cursor+2+dataSize*2 != line.size() )
             {//Bad size
                 hexFile.close();
@@ -157,7 +155,7 @@ bool LoadCodeHex(const std::string& pathfile)
             }
             for (unsigned int i=0; i<dataSize; ++i)
             {
-                unsigned char data = simul::math::HexToU8(&line[cursor]);
+                unsigned char data = cmcs::math::HexToU8(&line[cursor]);
                 cursor+=2;
                 if ( address >= gDeviceData._dataFlash.size() )
                 {//Out of bound
@@ -168,15 +166,15 @@ bool LoadCodeHex(const std::string& pathfile)
                 ++address;
             }
             break;
-        case simul::core::RecordType::RECORDTYPE_END_OF_FILE:
+        case cmcs::core::RecordType::RECORDTYPE_END_OF_FILE:
             hexFile.close();
             return true;
             break;
-        case simul::core::RecordType::RECORDTYPE_EXTENDED_SEGMENT_ADDRESS:
+        case cmcs::core::RecordType::RECORDTYPE_EXTENDED_SEGMENT_ADDRESS:
             break;
-        case simul::core::RecordType::RECORDTYPE_EXTENDED_LINEAR_ADDRESS:
+        case cmcs::core::RecordType::RECORDTYPE_EXTENDED_LINEAR_ADDRESS:
             break;
-        case simul::core::RecordType::RECORDTYPE_START_LINEAR_ADDRESS:
+        case cmcs::core::RecordType::RECORDTYPE_START_LINEAR_ADDRESS:
             break;
         default:
             break;
@@ -231,11 +229,11 @@ bool ExecuteStepCode(bool print)
         if (print)
         {
             gTerminalPtr->print(S_PRINT_FORMAT("info", "Executing : %s %s\n"),
-                                simul::core::opcode::_C8051_opcode[gDeviceData._dataFlash[gDeviceData._cursor]]._opcode.c_str(),
-                                simul::core::opcode::_C8051_opcode[gDeviceData._dataFlash[gDeviceData._cursor]]._operands.c_str());
+                                cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[gDeviceData._cursor]]._opcode.c_str(),
+                                cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[gDeviceData._cursor]]._operands.c_str());
         }
 
-        simul::core::opcode::_C8051_opcode[gDeviceData._dataFlash[gDeviceData._cursor]]._func();
+        cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[gDeviceData._cursor]]._func();
         gDeviceData._cursor = gDeviceData._programCounter;
 
         if (print)
@@ -253,5 +251,4 @@ bool ExecuteStepCode(bool print)
     return true;
 }
 
-}//end core
-}//end simul
+}//end cmcs::core

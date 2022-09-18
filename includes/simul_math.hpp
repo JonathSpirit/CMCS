@@ -1,11 +1,11 @@
-#ifndef _SIMUL_MATH_HPP_INCLUDED
-#define _SIMUL_MATH_HPP_INCLUDED
+#ifndef _CMCS_SIMUL_MATH_HPP_INCLUDED
+#define _CMCS_SIMUL_MATH_HPP_INCLUDED
 
 #include <string>
 #include <vector>
 #include <optional>
 
-namespace simul::math
+namespace cmcs::math
 {
 
 bool GetParity(uint32_t n);
@@ -21,6 +21,6 @@ uint16_t GetNumFromString(const std::string& str);
 
 std::size_t Split(const std::string& str, std::vector<std::string>& output, char delimiter=' ');
 
-}//end simul::math
+}//end cmcs::math
 
-#endif // _SIMUL_MATH_HPP_INCLUDED
+#endif // _CMCS_SIMUL_MATH_HPP_INCLUDED

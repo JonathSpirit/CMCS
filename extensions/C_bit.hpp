@@ -1,9 +1,9 @@
-#ifndef _C_BIT_HPP_INCLUDED
-#define _C_BIT_HPP_INCLUDED
+#ifndef _CMCS_C_BIT_HPP_INCLUDED
+#define _CMCS_C_BIT_HPP_INCLUDED
 
 #include <vector>
 
-namespace simul
+namespace cmcs
 {
 
 template<class T>
@@ -67,6 +67,6 @@ private:
 
 #include "C_bit.inl"
 
-}//end simul
+}//end cmcs
 
-#endif // _C_BIT_HPP_INCLUDED
+#endif // _CMCS_C_BIT_HPP_INCLUDED

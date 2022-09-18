@@ -1,11 +1,14 @@
-#ifndef _SHAREABLEDATA_HPP_INCLUDED
-#define _SHAREABLEDATA_HPP_INCLUDED
+#ifndef _CMCS_SHAREABLEDATA_HPP_INCLUDED
+#define _CMCS_SHAREABLEDATA_HPP_INCLUDED
 
 #include <string>
 #include <typeinfo>
 #include <mutex>
 #include <map>
 #include <memory>
+
+namespace cmcs
+{
 
 class SharedData
 {
@@ -26,6 +29,7 @@ class ShareableData
 {
 public:
     ShareableData() = default;
+
     ~ShareableData() = default;
 
     inline void clear();
@@ -46,4 +50,6 @@ private:
 
 #include "C_shareableData.inl"
 
-#endif // _SHAREABLEDATA_H_INCLUDED
+}//end cmcs
+
+#endif // _CMCS_SHAREABLEDATA_HPP_INCLUDED

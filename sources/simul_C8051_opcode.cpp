@@ -25,12 +25,7 @@
 :->Colon
 **/
 
-namespace simul
-{
-namespace core
-{
-
-namespace opcode
+namespace cmcs::core::opcode
 {
 
 bool Op_NOP()
@@ -69,7 +64,7 @@ bool Op_INC()
     case 0x04: //INC A
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator)+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     case 0x05: //INC direct
         gDeviceData._programCounter+=2;
@@ -137,7 +132,7 @@ bool Op_RRC()
     gDeviceData._psw = (*gDeviceData._accumulator)&0x01;
 
     (*gDeviceData._accumulator) = ((*gDeviceData._accumulator)>>1) | (tmpCarry?0x80:0x00);
-    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
     return true;
 }
 bool Op_DEC()
@@ -149,7 +144,7 @@ bool Op_DEC()
     case 0x14: //DEC A
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator)-=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     case 0x15: //DEC direct
         gDeviceData._programCounter+=2;
@@ -207,45 +202,45 @@ bool Op_ADD()
     {
     case 0x24: //ADD A, #immediate
         gDeviceData._programCounter+=2;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataFlash[gDeviceData._cursor+1], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataFlash[gDeviceData._cursor+1], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataFlash[gDeviceData._cursor+1];
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x25: //ADD direct
         gDeviceData._programCounter+=2;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]];
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x26: //ADD @R0
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[0]], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[0]], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataRam[gDeviceData._registerBank[0]];
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x27: //ADD @R1
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[1]], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[1]], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataRam[gDeviceData._registerBank[1]];
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
     if ( (opcode&0xF8)==0x28 )
     {//ADD Rn
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._registerBank[opcode&0x07], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._registerBank[opcode&0x07], 1);
         (*gDeviceData._accumulator)+=gDeviceData._registerBank[opcode&0x07];
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
 
@@ -278,7 +273,7 @@ bool Op_RLC()
     gDeviceData._psw = (*gDeviceData._accumulator)&0x80;
 
     (*gDeviceData._accumulator) = ((*gDeviceData._accumulator)<<1) | (tmpCarry?0x01:0x00);
-    gDeviceData._psw = simul::math::GetParity(*gDeviceData._accumulator);
+    gDeviceData._psw = cmcs::math::GetParity(*gDeviceData._accumulator);
     return true;
 }
 bool Op_ADDC()
@@ -290,45 +285,45 @@ bool Op_ADDC()
     {
     case 0x34: //ADDC A, #immediate
         gDeviceData._programCounter+=2;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataFlash[gDeviceData._cursor+1], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataFlash[gDeviceData._cursor+1], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataFlash[gDeviceData._cursor+1] + gDeviceData._psw.setPos(device::BIT_PSW_CARRY);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x35: //ADDC direct
         gDeviceData._programCounter+=2;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]] + gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x36: //ADDC @R0
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[0]], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[0]], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataRam[gDeviceData._registerBank[0]] + gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x37: //ADDC @R1
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[1]], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._dataRam[gDeviceData._registerBank[1]], 1);
         (*gDeviceData._accumulator)+=gDeviceData._dataRam[gDeviceData._registerBank[1]] + gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
     if ( (opcode&0xF8)==0x38 )
     {//ADDC Rn
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._registerBank[opcode&0x07], 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow((*gDeviceData._accumulator), gDeviceData._registerBank[opcode&0x07], 1);
         (*gDeviceData._accumulator)+=gDeviceData._registerBank[opcode&0x07] + gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = simul::math::GetCarry((*gDeviceData._accumulator), 1);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_CARRY) = cmcs::math::GetCarry((*gDeviceData._accumulator), 1);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
 
@@ -354,22 +349,22 @@ bool Op_ORL()
     case 0x44: //ORL A, #immediate
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) |= gDeviceData._dataFlash[gDeviceData._cursor+1];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x45: //ORL direct
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) |= gDeviceData._dataRam[ gDeviceData._dataFlash[gDeviceData._cursor+1] ];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x46: //ORL @R0
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) |= gDeviceData._dataRam[gDeviceData._registerBank[0]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x47: //ORL @R1
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) |= gDeviceData._dataRam[gDeviceData._registerBank[1]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0xA0: //ORL C, /bit
         gDeviceData._programCounter+=2;
@@ -392,7 +387,7 @@ bool Op_ORL()
     {//ORL Rn
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) |= gDeviceData._registerBank[opcode&0x07];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
 
@@ -418,22 +413,22 @@ bool Op_ANL()
     case 0x54: //ANL A, #immediate
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) &= gDeviceData._dataFlash[gDeviceData._cursor+1];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x55: //ANL direct
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) &= gDeviceData._dataRam[ gDeviceData._dataFlash[gDeviceData._cursor+1] ];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x56: //ANL @R0
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) &= gDeviceData._dataRam[gDeviceData._registerBank[0]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x57: //ANL @R1
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) &= gDeviceData._dataRam[gDeviceData._registerBank[1]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0xB0: //ANL C, /bit
         gDeviceData._programCounter+=2;
@@ -456,7 +451,7 @@ bool Op_ANL()
     {//ANL Rn
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) &= gDeviceData._registerBank[opcode&0x07];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
 
@@ -482,22 +477,22 @@ bool Op_XRL()
     case 0x64: //XRL A, #immediate
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) ^= gDeviceData._dataFlash[gDeviceData._cursor+1];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x65: //XRL direct
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) ^= gDeviceData._dataRam[ gDeviceData._dataFlash[gDeviceData._cursor+1] ];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x66: //XRL @R0
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) ^= gDeviceData._dataRam[gDeviceData._registerBank[0]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x67: //XRL @R1
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) ^= gDeviceData._dataRam[gDeviceData._registerBank[1]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x62: //XRL direct, A
         gDeviceData._programCounter+=3;
@@ -512,7 +507,7 @@ bool Op_XRL()
     {//XRL Rn
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) ^= gDeviceData._registerBank[opcode&0x07];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
 
@@ -543,22 +538,22 @@ bool Op_MOV()
     case 0x74: //MOV A, #immediate
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) = gDeviceData._dataFlash[gDeviceData._cursor+1];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0xE5: //MOV A, direct
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) = gDeviceData._dataRam[ gDeviceData._dataFlash[gDeviceData._cursor+1] ];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0xE6: //MOV A, @R0
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) = gDeviceData._dataRam[gDeviceData._registerBank[0]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0xE7: //MOV A, @R1
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) = gDeviceData._dataRam[gDeviceData._registerBank[1]];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
 
     case 0x76: //MOV @R0, #immediate
@@ -625,7 +620,7 @@ bool Op_MOV()
     {//MOV A, Rn
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) = gDeviceData._registerBank[opcode&0x07];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     }
     if ( (opcode&0xF8)==0x88 )
@@ -670,7 +665,7 @@ bool Op_MOVC()
     case 0x93: //MOVC A, @A+DPTR
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) = gDeviceData._dataRam[*gDeviceData._accumulator] + (*gDeviceData._dptr);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
     case 0x83: //MOVC A, @A+PC
         gDeviceData._programCounter+=1;
@@ -688,8 +683,8 @@ bool Op_DIV()
 
     (*gDeviceData._accumulator) = div_quotient;
     (*gDeviceData._b) = div_remainder;
-    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
-    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetCarry(*gDeviceData._accumulator, false);
+    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
+    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetCarry(*gDeviceData._accumulator, false);
     gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = 0;
 
     return true;
@@ -703,45 +698,45 @@ bool Op_SUBB()
     {
     case 0x94: //SUBB A, #immediate
         gDeviceData._programCounter+=2;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataFlash[gDeviceData._cursor+1], false);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataFlash[gDeviceData._cursor+1], false);
         (*gDeviceData._accumulator) -= gDeviceData._dataFlash[gDeviceData._cursor+1] - gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry(*gDeviceData._accumulator, false);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetCarry(*gDeviceData._accumulator, false);
         return true;
     case 0x95: //SUBB A, direct
         gDeviceData._programCounter+=2;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[ gDeviceData._dataFlash[gDeviceData._cursor+1] ], false);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[ gDeviceData._dataFlash[gDeviceData._cursor+1] ], false);
         (*gDeviceData._accumulator) -= gDeviceData._dataRam[ gDeviceData._dataFlash[gDeviceData._cursor+1] ] - gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry(*gDeviceData._accumulator, false);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetCarry(*gDeviceData._accumulator, false);
         return true;
     case 0x96: //SUBB A, @R0
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[gDeviceData._registerBank[0]], false);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[gDeviceData._registerBank[0]], false);
         (*gDeviceData._accumulator) -= gDeviceData._dataRam[gDeviceData._registerBank[0]] - gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry(*gDeviceData._accumulator, false);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetCarry(*gDeviceData._accumulator, false);
         return true;
     case 0x97: //SUBB A, @R1
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[gDeviceData._registerBank[1]], false);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[gDeviceData._registerBank[1]], false);
         (*gDeviceData._accumulator) -= gDeviceData._dataRam[gDeviceData._registerBank[1]] - gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry(*gDeviceData._accumulator, false);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetCarry(*gDeviceData._accumulator, false);
         return true;
     }
     if ( (opcode&0xF8)==0x98 )
     {//SUBB A, Rn
         gDeviceData._programCounter+=1;
-        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = simul::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[gDeviceData._registerBank[opcode&0x07]], false);
+        gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = cmcs::math::WillOverflow(*gDeviceData._accumulator, gDeviceData._psw.setPos(device::BIT_PSW_PARITY)+gDeviceData._dataRam[gDeviceData._registerBank[opcode&0x07]], false);
         (*gDeviceData._accumulator) -= gDeviceData._registerBank[opcode&0x07]  - gDeviceData._psw.setPos(device::BIT_PSW_PARITY);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
-        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = simul::math::GetBCDCarry(*gDeviceData._accumulator, false);
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_AUXCARRY) = cmcs::math::GetBCDCarry(*gDeviceData._accumulator, false);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetCarry(*gDeviceData._accumulator, false);
         return true;
     }
 
@@ -755,7 +750,7 @@ bool Op_MUL()
     (*gDeviceData._accumulator) = mul_result&0x00FF;
     (*gDeviceData._b) = mul_result>>8;
 
-    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
     gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = 0;
     gDeviceData._psw.setPos(device::BIT_PSW_OVERFLOW) = mul_result>255;
 
@@ -895,7 +890,7 @@ bool Op_CLR()
     case 0xE4: //CLR A
         gDeviceData._programCounter+=1;
         (*gDeviceData._accumulator) = 0;
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     case 0xC2: //CLR bit
         gDeviceData._programCounter+=2;
@@ -929,7 +924,7 @@ bool Op_XCH()
         (*gDeviceData._accumulator) = gDeviceData._dataRam[gDeviceData._registerBank[0]];
         gDeviceData._dataRam[gDeviceData._registerBank[0]] = buff;
 
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     case 0xC7: //XCH A, @R1
         gDeviceData._programCounter+=1;
@@ -937,7 +932,7 @@ bool Op_XCH()
         (*gDeviceData._accumulator) = gDeviceData._dataRam[gDeviceData._registerBank[1]];
         gDeviceData._dataRam[gDeviceData._registerBank[1]] = buff;
 
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     case 0xC5: //XCH A, direct
         gDeviceData._programCounter+=2;
@@ -946,7 +941,7 @@ bool Op_XCH()
         (*gDeviceData._accumulator) = gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]];
         gDeviceData._dataRam[gDeviceData._dataFlash[gDeviceData._cursor+1]] = buff;
 
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     }
     if ( (opcode&0xF8)==0xC8 )
@@ -957,7 +952,7 @@ bool Op_XCH()
         (*gDeviceData._accumulator) = gDeviceData._registerBank[opcode&0x07];
         gDeviceData._registerBank[opcode&0x07] = buff;
 
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     }
 
@@ -1001,7 +996,7 @@ bool Op_DA()
     {
         (*gDeviceData._accumulator) += 0x60;
     }
-    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+    gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
 
     return true;
 }
@@ -1051,7 +1046,7 @@ bool Op_XCHD()
         (*gDeviceData._accumulator) = ((*gDeviceData._accumulator)&0xF0) | (gDeviceData._dataRam[gDeviceData._registerBank[0]]&0x0F);
         gDeviceData._dataRam[gDeviceData._registerBank[0]] = (gDeviceData._dataRam[gDeviceData._registerBank[0]]&0xF0) | (buff&0x0F);
 
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     case 0xD7: //XCHD A, @R1
         gDeviceData._programCounter+=1;
@@ -1059,7 +1054,7 @@ bool Op_XCHD()
         (*gDeviceData._accumulator) = ((*gDeviceData._accumulator)&0xF0) | (gDeviceData._dataRam[gDeviceData._registerBank[1]]&0x0F);
         gDeviceData._dataRam[gDeviceData._registerBank[1]] = (gDeviceData._dataRam[gDeviceData._registerBank[1]]&0xF0) | (buff&0x0F);
 
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity(*gDeviceData._accumulator);
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity(*gDeviceData._accumulator);
         return true;
     }
 
@@ -1077,7 +1072,7 @@ bool Op_MOVX()
     case 0xE0: //MOVX A, @DPTR
         gDeviceData._programCounter+=2;
         (*gDeviceData._accumulator) = gDeviceData._dataXRam[*gDeviceData._dptr];
-        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = simul::math::GetParity((*gDeviceData._accumulator));
+        gDeviceData._psw.setPos(device::BIT_PSW_PARITY) = cmcs::math::GetParity((*gDeviceData._accumulator));
         return true;
 
     case 0xF2: //MOVX @R0, A
@@ -1394,7 +1389,4 @@ OpcodeInfo _C8051_opcode[256]=
     {"MOV", "R7, A", Op_MOV}
 };
 
-}//end opcode
-
-}//end core
-}//end simul
+}//end cmcs::core::opcode

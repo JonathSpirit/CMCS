@@ -1,11 +1,9 @@
-#ifndef _SIMUL_C8051_OPCODE_HPP_INCLUDED
-#define _SIMUL_C8051_OPCODE_HPP_INCLUDED
+#ifndef _CMCS_SIMUL_C8051_OPCODE_HPP_INCLUDED
+#define _CMCS_SIMUL_C8051_OPCODE_HPP_INCLUDED
 
 #include <string>
 
-namespace simul
-{
-namespace core
+namespace cmcs::core
 {
 
 typedef bool (*OpcodeFunction) ();
@@ -24,7 +22,6 @@ extern OpcodeInfo _C8051_opcode[256];
 
 }//end opcode
 
-}//end core
-}//end simul
+}//end cmcs::core
 
-#endif // _SIMUL_C8051_OPCODE_HPP_INCLUDED
+#endif // _CMCS_SIMUL_C8051_OPCODE_HPP_INCLUDED

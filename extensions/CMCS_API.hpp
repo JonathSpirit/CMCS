@@ -20,7 +20,7 @@ struct ExtensionIdentity
     std::string _author;
 };
 
-using FunctionInit = void(*)(ShareableData&);
+using FunctionInit = void(*)(cmcs::ShareableData&);
 using FunctionRetrieveExtensionIdentity = ExtensionIdentity(*)();
 using FunctionUninit = void(*)();
 using FunctionUpdate = bool(*)();

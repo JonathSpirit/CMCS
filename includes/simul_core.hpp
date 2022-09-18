@@ -1,5 +1,5 @@
-#ifndef _SIMUL_CORE_HPP_INCLUDED
-#define _SIMUL_CORE_HPP_INCLUDED
+#ifndef _CMCS_SIMUL_CORE_HPP_INCLUDED
+#define _CMCS_SIMUL_CORE_HPP_INCLUDED
 
 #define KMCS_MAIN_FONT_PATH "data/fonts/arial.ttf"
 #define KMCS_MAIN_FONT "default"
@@ -9,9 +9,7 @@
 #include "simul_device.hpp"
 #include <string>
 
-namespace simul
-{
-namespace core
+namespace cmcs::core
 {
 
 enum RecordType : uint8_t
@@ -36,7 +34,6 @@ bool WriteCodeAsm(const std::string& pathfile);
 extern bool _threadRunStepCode;
 void ThreadRunStepCode();
 
-}//end core
-}//end simul
+}//end cmcs::core
 
-#endif // _SIMUL_CORE_HPP_INCLUDED
+#endif // _CMCS_SIMUL_CORE_HPP_INCLUDED

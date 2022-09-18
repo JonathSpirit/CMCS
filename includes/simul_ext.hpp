@@ -1,10 +1,15 @@
-#ifndef _SIMUL_EXT_HPP_INCLUDED
-#define _SIMUL_EXT_HPP_INCLUDED
+#ifndef _CMCS_SIMUL_EXT_HPP_INCLUDED
+#define _CMCS_SIMUL_EXT_HPP_INCLUDED
 
 #include <string>
 #include "CMCS_API.hpp"
 
-namespace simul::ext
+#define CMCS_EXT_FUNCDEF_INIT "_Z12CMCSlib_InitRN4cmcs13ShareableDataE"
+#define CMCS_EXT_FUNCDEF_UNINIT "_Z14CMCSlib_Uninitv"
+#define CMCS_EXT_FUNCDEF_UPDATE "_Z14CMCSlib_Updatev"
+#define CMCS_EXT_FUNCDEF_RETRIEVE_EXTENSION_IDENTITY "_Z33CMCSlib_retrieveExtensionIdentityv"
+
+namespace cmcs::ext
 {
 
 struct Extension
@@ -23,6 +28,6 @@ void UpdateAll();
 void FreeAll();
 bool FreeExtension(const std::string& name);
 
-}//end simul::ext
+}//end cmcs::ext
 
-#endif // _SIMUL_EXT_HPP_INCLUDED
+#endif // _CMCS_SIMUL_EXT_HPP_INCLUDED

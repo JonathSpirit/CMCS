@@ -1,5 +1,5 @@
-#ifndef __PIN_HPP__
-#define __PIN_HPP__
+#ifndef _CMCSGUI_C_PIN_HPP_INCLUDED
+#define _CMCSGUI_C_PIN_HPP_INCLUDED
 
 #include "C_sprite.hpp"
 #include "C_bit.hpp"
@@ -35,11 +35,10 @@ private:
     cmcs::draw::Texture g_textureSwitchOff;
 
     bool g_statMouseOn = false;
-    simul::Bits<uint8_t> g_stat;
-    simul::Bits<uint8_t> g_outputMod;
+    cmcs::Bits<uint8_t> g_stat;
+    cmcs::Bits<uint8_t> g_outputMod;
 
     bool g_flag = false;
 };
 
-
-#endif // __PIN_HPP__
+#endif // _CMCSGUI_C_PIN_HPP_INCLUDED
