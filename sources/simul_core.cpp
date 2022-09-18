@@ -14,43 +14,8 @@ namespace cmcs::core
 
 device::C8051_data gDeviceData;
 
-/*unsigned short HexToUShort(const char* msb_char)
+bool LoadDevice(const std::string& filePath)
 {
-    unsigned short result = 0x0000;
-    for (unsigned int i=0; i<4; ++i)
-    {
-        result |= (msb_char[i]>='0') ? ((msb_char[i]>='A') ? static_cast<unsigned short>(msb_char[i]-55)<<(12-4*i) : static_cast<unsigned short>(msb_char[i]-'0')<<(12-4*i)) : 0x0000;
-    }
-    return result;
-}
-unsigned char HexToUChar(const char* msb_char)
-{
-    unsigned char result = 0x00;
-    for (unsigned int i=0; i<2; ++i)
-    {
-        result |= (msb_char[i]>='0') ? ((msb_char[i]>='A') ? static_cast<unsigned char>(msb_char[i]-55)<<(4-4*i) : static_cast<unsigned char>(msb_char[i]-'0')<<(4-4*i)) : 0x00;
-    }
-    return result;
-}*/
-
-bool LoadDevice(const std::string& pathfile)
-{
-    /*
-    std::string gDeviceData._device;
-    std::vector<unsigned char> gDeviceData._dataFlash;
-    std::vector<unsigned char> gDeviceData._dataRam;
-    simul::BitBank<unsigned char> gDeviceData._dataBit;
-    std::vector<unsigned char> gDeviceData._dataXRam;
-    unsigned short gDeviceData._programCounter; //PC
-    unsigned short gDeviceData._cursor;
-
-    unsigned char* gDeviceData._stackPointer; //SP
-    unsigned short* gDeviceData._dptr; //DPTR
-    unsigned char* gDeviceData._registerBank; //Rn
-    unsigned char* gDeviceData._accumulator; //A
-    unsigned char* gDeviceData._b; //B
-    simul::Bit<unsigned char> gDeviceData._psw; //PSW
-    */
     gDeviceData._dataRam.resize(256);
     gDeviceData._dataFlash.resize(16000);
     gDeviceData._dataXRam.resize(4352);
@@ -95,37 +60,45 @@ bool LoadDevice(const std::string& pathfile)
     return true;
 }
 
-bool WriteCodeAsm(const std::string& pathfile)
+FileWriteStats WriteCodeAsm(const std::filesystem::path& filePath, bool replace)
 {
-    std::ofstream hexFile(pathfile, std::ifstream::out);
-    if (!hexFile)
+    if (!replace)
     {
-        return false;
+        if ( std::filesystem::exists(filePath) && std::filesystem::status(filePath).type() == std::filesystem::file_type::regular )
+        {
+            return FileWriteStats::FW_ALREADY_EXIST;
+        }
     }
 
-    for (unsigned int i=0; i<gDeviceData._dataFlash.size(); ++i)
+    std::ofstream hexFile(filePath);
+    if (!hexFile)
     {
-        hexFile << i << " 0x" << std::hex << (unsigned short)gDeviceData._dataFlash[i] << " ";
-        hexFile << std::dec << (unsigned short)gDeviceData._dataFlash[i] << " : " << cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._opcode << " " << cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._operands << std::endl;
+        return FileWriteStats::FW_ERROR;
+    }
+
+    for (std::size_t i=0; i<gDeviceData._dataFlash.size(); ++i)
+    {
+        hexFile << i << " 0x" << std::hex << static_cast<unsigned int>(gDeviceData._dataFlash[i]) << " ";
+        hexFile << std::dec << static_cast<unsigned int>(gDeviceData._dataFlash[i]) << " : " << cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._opcode << " " << cmcs::core::opcode::_C8051_opcode[gDeviceData._dataFlash[i]]._operands << std::endl;
     }
 
     hexFile.close();
-    return true;
+    return FileWriteStats::FW_OK;
 }
-bool LoadCodeHex(const std::string& pathfile)
-{
-    std::ifstream hexFile(pathfile, std::ifstream::in);
+bool LoadCodeHex(const std::filesystem::path& filePath)
+{///https://en.wikipedia.org/wiki/Intel_HEX
+    std::ifstream hexFile(filePath);
     if (!hexFile)
     {
         return false;
     }
 
-    unsigned int global_size = 0;
+    std::size_t globalSize = 0;
     std::string line;
     while ( std::getline(hexFile, line) )
     {
-        if ( line.length() < 11 )
-        {//Bad format
+        if ( line.length() < CMCS_CORE_HEX_RECORD_MINIMUM_LENGTH )
+        {//The record is too small
             hexFile.close();
             return false;
         }
@@ -135,27 +108,43 @@ bool LoadCodeHex(const std::string& pathfile)
             return false;
         }
 
-        unsigned int cursor = 1;
-        unsigned char dataSize = cmcs::math::HexToU8(&line[cursor]);
-        cursor+=2;
-        unsigned short address = cmcs::math::HexToU16(&line[cursor]);
-        cursor+=4;
-        unsigned char recordType = cmcs::math::HexToU8(&line[cursor]);
+        //Computing checksum
+        uint8_t checksum = 0x00;
+        for (std::size_t i=1; i<line.size()-2; i+=2)
+        {
+            checksum += cmcs::math::HexToU8(line.data()+i);
+        }
+        checksum = ~checksum+1;
+        if (checksum != cmcs::math::HexToU8(line.data()+line.size()-2))
+        {//Bad checksum
+            hexFile.close();
+            return false;
+        }
+
+        std::size_t cursor = 1;
+
+        uint8_t byteCount = cmcs::math::HexToU8(line.data()+cursor);
         cursor+=2;
 
-        global_size += dataSize;
+        uint16_t address = cmcs::math::HexToU16(line.data()+cursor);
+        cursor+=4;
+
+        auto recordType = static_cast<IntelHexRecordType>(cmcs::math::HexToU8(line.data()+cursor));
+        cursor+=2;
+
+        globalSize += byteCount;
 
         switch ( recordType )
         {
-        case cmcs::core::RecordType::RECORDTYPE_DATA:
-            if ( cursor+2+dataSize*2 != line.size() )
+        case IntelHexRecordType::RT_DATA:
+            if ( cursor+2+byteCount*2 != line.size() )
             {//Bad size
                 hexFile.close();
                 return false;
             }
-            for (unsigned int i=0; i<dataSize; ++i)
+            for (uint8_t i=0; i<byteCount; ++i)
             {
-                unsigned char data = cmcs::math::HexToU8(&line[cursor]);
+                uint8_t data = cmcs::math::HexToU8(line.data()+cursor);
                 cursor+=2;
                 if ( address >= gDeviceData._dataFlash.size() )
                 {//Out of bound
@@ -166,37 +155,36 @@ bool LoadCodeHex(const std::string& pathfile)
                 ++address;
             }
             break;
-        case cmcs::core::RecordType::RECORDTYPE_END_OF_FILE:
+        case IntelHexRecordType::RT_END_OF_FILE:
             hexFile.close();
             return true;
-            break;
-        case cmcs::core::RecordType::RECORDTYPE_EXTENDED_SEGMENT_ADDRESS:
-            break;
-        case cmcs::core::RecordType::RECORDTYPE_EXTENDED_LINEAR_ADDRESS:
-            break;
-        case cmcs::core::RecordType::RECORDTYPE_START_LINEAR_ADDRESS:
-            break;
+        case IntelHexRecordType::RT_EXTENDED_SEGMENT_ADDRESS:
+        case IntelHexRecordType::RT_EXTENDED_LINEAR_ADDRESS:
+        case IntelHexRecordType::RT_START_SEGMENT_ADDRESS:
+        case IntelHexRecordType::RT_START_LINEAR_ADDRESS:
         default:
-            break;
+            //Unimplemented
+            hexFile.close();
+            return false;
         }
     }
 
-    //bad format
+    //No end of file
     hexFile.close();
     return false;
 }
-bool LoadCodeBin(const std::string& pathfile)
+bool LoadCodeBin(const std::filesystem::path& filePath)
 {
-    std::ifstream binFile(pathfile, std::ifstream::in | std::ifstream::binary);
+    std::ifstream binFile(filePath, std::ifstream::in | std::ifstream::binary);
     if (!binFile)
     {
         return false;
     }
 
-    unsigned int address = 0;
+    std::size_t address = 0;
     int data;
     data = binFile.get();
-    while ( data >= 0 )
+    while (data != std::ifstream::traits_type::eof())
     {
         if ( address >= gDeviceData._dataFlash.size() )
         {//Out of bound
@@ -218,7 +206,7 @@ void ThreadRunStepCode()
     while (_threadRunStepCode)
     {
         ExecuteStepCode(false);
-        std::this_thread::sleep_for(std::chrono::milliseconds{20});
+        std::this_thread::sleep_for(std::chrono::milliseconds{10});
     }
 }
 

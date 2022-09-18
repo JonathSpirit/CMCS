@@ -194,13 +194,31 @@ int main(int argv, char** args)
                     if (inputArguments[1] == "asm")
                     {
                         terminal.print(S_PRINT_FORMAT("info", "Exporting to assembly file <\"%s\">:\n"), inputArguments[2].c_str());
-                        if ( cmcs::core::WriteCodeAsm(inputArguments[2]) )
+                        auto result = cmcs::core::WriteCodeAsm(inputArguments[2], false);
+                        switch (result)
                         {
+                        case cmcs::core::FileWriteStats::FW_OK:
                             terminal.print(S_PRINT_FORMAT("info", "File exported !\n"));
-                        }
-                        else
-                        {
-                            terminal.print(S_PRINT_FORMAT("error", "Invalid export !\n"));
+                            break;
+                        case cmcs::core::FileWriteStats::FW_ERROR:
+                            terminal.print(S_PRINT_FORMAT("error", "Can't export the file !\n"));
+                            break;
+                        case cmcs::core::FileWriteStats::FW_ALREADY_EXIST:
+                            {
+                                std::string_view response = terminal.input("\x1b[1;32mreplace existing file ? (y/N)\x1b[0m> ");
+                                if (response == "y" || response == "Y")
+                                {
+                                    if (cmcs::core::WriteCodeAsm(inputArguments[2], true) == cmcs::core::FileWriteStats::FW_OK)
+                                    {
+                                        terminal.print(S_PRINT_FORMAT("info", "File exported !\n"));
+                                    }
+                                    else
+                                    {
+                                        terminal.print(S_PRINT_FORMAT("error", "Can't export the file !\n"));
+                                    }
+                                }
+                            }
+                            break;
                         }
                         continue;
                     }

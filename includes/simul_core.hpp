@@ -1,35 +1,41 @@
 #ifndef _CMCS_SIMUL_CORE_HPP_INCLUDED
 #define _CMCS_SIMUL_CORE_HPP_INCLUDED
 
-#define KMCS_MAIN_FONT_PATH "data/fonts/arial.ttf"
-#define KMCS_MAIN_FONT "default"
-#define KMCS_CORE_VERSION "V0.3"
-#define KMCS_CORE_MAXPORTS 11
-
 #include "simul_device.hpp"
 #include <string>
+#include <filesystem>
+
+#define CMCS_CORE_HEX_RECORD_MINIMUM_LENGTH 11
 
 namespace cmcs::core
 {
 
-enum RecordType : uint8_t
+enum IntelHexRecordType : uint8_t
 {
-    RECORDTYPE_DATA = 0,
-    RECORDTYPE_END_OF_FILE,
-    RECORDTYPE_EXTENDED_SEGMENT_ADDRESS,
-    RECORDTYPE_EXTENDED_LINEAR_ADDRESS,
-    RECORDTYPE_START_LINEAR_ADDRESS,
+    RT_DATA = 0x00,
+    RT_END_OF_FILE = 0x01,
+    RT_EXTENDED_SEGMENT_ADDRESS = 0x02,
+    RT_START_SEGMENT_ADDRESS = 0x03,
+    RT_EXTENDED_LINEAR_ADDRESS = 0x04,
+    RT_START_LINEAR_ADDRESS = 0x05,
+};
+
+enum class FileWriteStats
+{
+    FW_OK,
+    FW_ERROR,
+    FW_ALREADY_EXIST
 };
 
 extern device::C8051_data gDeviceData;
 
 bool ExecuteStepCode(bool print);
 
-bool LoadCodeHex(const std::string& pathfile);
-bool LoadCodeBin(const std::string& pathfile);
-bool LoadDevice(const std::string& pathfile);
+bool LoadCodeHex(const std::filesystem::path& filePath);
+bool LoadCodeBin(const std::filesystem::path& filePath);
+bool LoadDevice(const std::string& filePath);
 
-bool WriteCodeAsm(const std::string& pathfile);
+FileWriteStats WriteCodeAsm(const std::filesystem::path& filePath, bool replace);
 
 extern bool _threadRunStepCode;
 void ThreadRunStepCode();
