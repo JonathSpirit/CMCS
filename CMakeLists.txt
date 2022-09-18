@@ -59,6 +59,12 @@ target_link_libraries(${CMAKE_PROJECT_NAME} mingw32 SDL2main SDL2 SDL2_ttf replx
 add_subdirectory(drawingUtils)
 set(DRAWINGUTILS_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/drawingUtils/includes)
 
+#init .txt
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        "${PROJECT_SOURCE_DIR}/init.txt"
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>)
+
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
         $<IF:$<TARGET_EXISTS:replxx>,$<$<TARGET_EXISTS:replxx>:$<TARGET_FILE:replxx>>,"${PROJECT_SOURCE_DIR}/dummy">

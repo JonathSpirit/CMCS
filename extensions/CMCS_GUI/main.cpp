@@ -91,7 +91,8 @@ void ThreadUpdate()
 
     std::vector<std::vector<Pin> > pins;
 
-    float posx=0.0f, posy=20.0f;
+    float posx=0.0f;
+    float posy=20.0f;
     pins.resize(NUM_OF_PORTS);
     for (unsigned int i=0; i<NUM_OF_PORTS; ++i)
     {
@@ -108,6 +109,9 @@ void ThreadUpdate()
     }
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    uint64_t lastTime;
+    uint64_t currentTime;
 
     while (gRunning)
     {
@@ -126,6 +130,11 @@ void ThreadUpdate()
                 }
             }
         }
+
+        currentTime = SDL_GetTicks64();
+        uint32_t remainingTime = std::clamp<int64_t>(static_cast<int64_t>(1000/60) - static_cast<int64_t>(currentTime-lastTime), 0, 1000/60);
+        lastTime = currentTime;
+        SDL_Delay(remainingTime);
 
         SDL_RenderClear(renderer);
 
@@ -146,7 +155,6 @@ void ThreadUpdate()
         textVersion.draw(renderer);
 
         SDL_RenderPresent(renderer);
-        std::this_thread::sleep_for(std::chrono::milliseconds{10});
     }
 
     SDL_DestroyRenderer(renderer);

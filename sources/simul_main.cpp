@@ -1,6 +1,7 @@
 #include "simul_main.hpp"
 #include "simul_ext.hpp"
 #include "simul_core.hpp"
+#include "simul_math.hpp"
 #include "C_shareableData.hpp"
 
 #include <replxx.hxx>
@@ -9,14 +10,34 @@
 #include <SDL_ttf.h>
 
 #include <vector>
-#include <list>
 #include <string>
 #include <iomanip>
-#include "simul_math.hpp"
+#include <fstream>
 #include <thread>
+#include <memory>
 
 namespace simul
 {
+
+namespace
+{
+
+struct ThreadDeleter
+{
+    void operator()(std::thread* ptr) const
+    {
+        if (ptr != nullptr)
+        {
+            if (ptr->joinable())
+            {
+                ptr->join();
+            }
+            delete ptr;
+        }
+    }
+};
+
+}//end
 
 replxx::Replxx* gTerminalPtr{nullptr};
 
@@ -32,7 +53,7 @@ int main(int argv, char** args)
     TTF_Init();
 
     simul::SIMUL_STATS simulStat{simul::SIMUL_STAT_IDLE};
-    std::thread* simulThread{nullptr};
+    std::unique_ptr<std::thread, simul::ThreadDeleter> simulThread;
     bool run = true;
     ///SetConsoleTitle("C51 MicroController Simulator"); TODO
 
@@ -40,9 +61,29 @@ int main(int argv, char** args)
     shareableData.add(&simul::core::gDeviceData, "C8051_data");
     shareableData.add( &terminal, "terminal");
 
+    //Read init.txt file
+    std::ifstream fileInit("init.txt");
+    std::string stringCommand;
+
     while (run)
     {
-        std::string_view input{ terminal.input("\x1b[1;32minput\x1b[0m> ") };
+        std::string_view input;
+
+        if (fileInit.is_open())
+        {
+            if (std::getline(fileInit, stringCommand))
+            {
+                input = stringCommand;
+            }
+            else
+            {
+                fileInit.close();
+            }
+        }
+        else
+        {
+            input = terminal.input("\x1b[1;32minput\x1b[0m> ");
+        }
 
         std::vector<std::string> inputArguments;
         simul::math::Split(std::string{input}, inputArguments);
@@ -59,7 +100,7 @@ int main(int argv, char** args)
                 simulStat = simul::SIMUL_STAT_RUNNING;
                 terminal.print(S_PRINT_FORMAT("info", "Executing code, to stop please write \"stop\" ...\n"));
                 simul::core::_threadRunStepCode = true;
-                simulThread = new std::thread(simul::core::ThreadRunStepCode);
+                simulThread.reset(new std::thread(simul::core::ThreadRunStepCode));
             }
             else
             {
@@ -77,8 +118,7 @@ int main(int argv, char** args)
                 simulStat = simul::SIMUL_STAT_IDLE;
                 terminal.print(S_PRINT_FORMAT("info", "Code execution stopped !\n"));
                 simul::core::_threadRunStepCode = false;
-                simulThread->join();
-                delete simulThread;
+                simulThread.reset();
             }
         }
 
@@ -265,8 +305,7 @@ int main(int argv, char** args)
             if (simulStat == simul::SIMUL_STAT_RUNNING)
             {
                 simul::core::_threadRunStepCode = false;
-                simulThread->join();
-                delete simulThread;
+                simulThread.reset();
             }
         }
     }
