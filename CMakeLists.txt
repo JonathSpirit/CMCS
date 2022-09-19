@@ -65,6 +65,18 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
         "${PROJECT_SOURCE_DIR}/init.txt"
         $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>)
 
+#extensions data
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/extensions/CMCS_GUI/data"
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/data)
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/data"
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/data)
+
+#DLLs
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
         $<IF:$<TARGET_EXISTS:replxx>,$<$<TARGET_EXISTS:replxx>:$<TARGET_FILE:replxx>>,"${PROJECT_SOURCE_DIR}/dummy">
