@@ -35,7 +35,7 @@ public:
     inline void clear();
 
     template<typename T>
-    bool add(T* data, std::string name);
+    std::shared_ptr<SharedData> add(T* data, std::string name);
 
     std::shared_ptr<SharedData> get(const std::string_view& name);
 

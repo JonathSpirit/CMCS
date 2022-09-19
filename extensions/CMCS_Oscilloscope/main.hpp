@@ -1,5 +1,5 @@
-#ifndef __MAIN_H__
-#define __MAIN_H__
+#ifndef _CMCSOSCILLOSCOPE_MAIN_HPP_INCLUDED
+#define _CMCSOSCILLOSCOPE_MAIN_HPP_INCLUDED
 
 #include <windows.h>
 
@@ -25,4 +25,4 @@ void DLL_EXPORT SomeFunction(const LPCSTR sometext);
 }
 #endif
 
-#endif // __MAIN_H__
+#endif // _CMCSOSCILLOSCOPE_MAIN_HPP_INCLUDED

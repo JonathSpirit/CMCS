@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.23)
-project(Projet_KMC_simul)
+project(C51MicroControllerSimulator)
 
 include(FetchContent)
 
@@ -73,6 +73,11 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${PROJECT_SOURCE_DIR}/extensions/CMCS_Oscilloscope/data"
+        $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/data)
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${PROJECT_SOURCE_DIR}/data"
         $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/data)
 
@@ -98,5 +103,5 @@ add_custom_command(TARGET ${CMAKE_PROJECT_NAME} PRE_BUILD
         $<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>)
 
 #Extensions
-
 add_subdirectory(extensions/CMCS_GUI)
+add_subdirectory(extensions/CMCS_Oscilloscope)

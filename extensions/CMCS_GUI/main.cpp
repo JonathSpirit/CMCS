@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <thread>
+#include <functional>
 
 #define NUM_OF_PORTS 3
 
@@ -16,6 +17,8 @@ using namespace cmcs;
 ShareableData* gCoreData;
 std::thread* gThread;
 bool gRunning;
+std::shared_ptr<SharedData> gPinPressedCallbacks;
+using gPinPressedCallbacks_t = std::vector<std::function<void(uint8_t*, std::size_t, uint8_t*, std::size_t)> >;
 
 void ThreadUpdate()
 {
@@ -94,10 +97,10 @@ void ThreadUpdate()
     float posx=0.0f;
     float posy=20.0f;
     pins.resize(NUM_OF_PORTS);
-    for (unsigned int i=0; i<NUM_OF_PORTS; ++i)
+    for (std::size_t i=0; i<NUM_OF_PORTS; ++i)
     {
         pins[i].reserve(8);
-        for (unsigned int a=0; a<8; ++a)
+        for (std::size_t a=0; a<8; ++a)
         {
             pins[i].emplace_back(SDL_FPoint{posx, posy}, dataPorts[i], 7-a, dataPortOutputModes[i], 7-a);
             pins[i].back().setLedTextures(textureLedOn, textureLedOff);
@@ -122,11 +125,20 @@ void ThreadUpdate()
             {
                 gRunning=false;
             }
-            for (unsigned int i=0; i<NUM_OF_PORTS; ++i)
+            for (std::size_t i=0; i<pins.size(); ++i)
             {
-                for (unsigned int a=0; a<8; ++a)
+                for (std::size_t a=0; a<pins[i].size(); ++a)
                 {
-                    pins[i][a].update(event);
+                    if ( pins[i][a].update(event) )
+                    {//The button has been pressed
+                        auto callbacks = gPinPressedCallbacks->acquirePointer<gPinPressedCallbacks_t>();
+                        for (auto& callback : *callbacks.second)
+                        {
+                            auto& stat = pins[i][a].getBitsStat();
+                            auto& outputMod = pins[i][a].getBitsOutputMod();
+                            callback(stat.getData(), stat.getPos(), outputMod.getData(), outputMod.getPos());
+                        }
+                    }
                 }
             }
         }
@@ -138,9 +150,9 @@ void ThreadUpdate()
 
         SDL_RenderClear(renderer);
 
-        for (unsigned int i=0; i<pins.size(); ++i)
+        for (std::size_t i=0; i<pins.size(); ++i)
         {
-            for (unsigned int a=0; a<pins[i].size(); ++a)
+            for (std::size_t a=0; a<pins[i].size(); ++a)
             {
                 pins[i][a].draw(renderer);
             }
@@ -163,6 +175,10 @@ void ThreadUpdate()
 
 CMCS_API void CMCSlib_Init(ShareableData& data)
 {
+    //Shared data with others extensions
+    static gPinPressedCallbacks_t pinPressedCallbacks;
+    gPinPressedCallbacks = data.add(&pinPressedCallbacks, "CMCS_GUI:pinPressedCallbacks");
+
     gRunning = true;
     gCoreData = &data;
     gThread = new std::thread(ThreadUpdate);
@@ -180,6 +196,8 @@ CMCS_API bool CMCSlib_Update()
 
 CMCS_API void CMCSlib_Uninit()
 {
+    gCoreData->remove("CMCS_GUI:pinPressedCallbacks");
+
     gRunning = false;
     if (gThread->joinable())
     {

@@ -27,11 +27,16 @@ void ShareableData::clear()
 }
 
 template<typename T>
-bool ShareableData::add(T* data, std::string name)
+std::shared_ptr<SharedData> ShareableData::add(T* data, std::string name)
 {
     std::scoped_lock<std::mutex> lock(this->g_mutex);
 
-    return this->g_data.insert({std::move(name), std::make_shared<SharedData>(data, typeid(T))}).second;
+    auto tuple = this->g_data.insert({std::move(name), std::make_shared<SharedData>(data, typeid(T))});
+    if (tuple.second)
+    {
+        return tuple.first->second;
+    }
+    return nullptr;
 }
 
 inline std::shared_ptr<SharedData> ShareableData::get(const std::string_view& name)

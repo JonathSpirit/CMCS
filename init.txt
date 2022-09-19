@@ -1,3 +1,4 @@
 set DUMMY
 load hex ../testC8051/projectSimpleIO/Objects/simpleIO.hex
 dll load extensions/CMCS_GUI/CMCS_GUI.dll
+dll load extensions/CMCS_Oscilloscope/CMCS_Oscilloscope.dll
