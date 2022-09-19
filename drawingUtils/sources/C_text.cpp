@@ -107,7 +107,7 @@ void Text::refreshInternalTexture(SDL_Renderer* renderer)
 {
     if (this->g_font.get() != nullptr)
     {
-        SDL_Surface* surface = TTF_RenderText_Solid(this->g_font.get(), this->g_string.c_str(), this->g_fgColor);
+        SDL_Surface* surface = TTF_RenderText_Blended(this->g_font.get(), this->g_string.c_str(), this->g_fgColor);
         if (surface != nullptr)
         {
             SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
