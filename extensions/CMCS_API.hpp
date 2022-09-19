@@ -8,10 +8,8 @@
 
 #define CMCS_EXT_PRINT_FORMAT(extensionName_, tag_, str_) "\x1b[1;33m[" extensionName_":" tag_"]\x1b[0m " str_
 
-#define CMCS_MAIN_FONT_PATH "data/fonts/arial.ttf"
-#define CMCS_MAIN_FONT "default"
+#define CMCS_MAIN_FONT_PATH "data/fonts/LiberationMono-Regular.ttf"
 #define CMCS_CORE_VERSION "V0.3"
-#define CMCS_CORE_MAXPORTS 11
 
 struct ExtensionIdentity
 {
