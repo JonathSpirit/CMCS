@@ -189,6 +189,7 @@ void ThreadUpdate()
                                                   320, 340) };
     SDL_Surface* graphImg = SDL_CreateRGBSurfaceWithFormat(0, 320,340, 32, SDL_PIXELFORMAT_RGBA32);
     SDL_SetSurfaceBlendMode(graphImg, SDL_BLENDMODE_NONE);
+    SDL_SetTextureBlendMode(graphTexture.get(), SDL_BLENDMODE_BLEND);
     SDL_FillRect(graphImg, nullptr, SDL_MapRGBA(graphImg->format,0,255,0,0));
 
     SDL_Point graphPos;
