@@ -206,6 +206,10 @@ void ThreadUpdate()
         signalTargets.back()._valueBefore = signalTargets.back()._data;
     }
 
+    std::this_thread::sleep_for(std::chrono::milliseconds{2000}); ///TODO remove that
+    auto functionResetAllPinColor = gCoreData->get("CMCS_GUI:functionResetAllPinColor");
+    auto functionSetPinColor = gCoreData->get("CMCS_GUI:functionSetPinColor");
+
     {
         auto callbacks = gCoreData->get("CMCS_GUI:pinPressedCallbacks");
         if (callbacks)
@@ -219,6 +223,10 @@ void ThreadUpdate()
                 {
                     signalTargets.back()._data = {dataStat, posStat};
                     signalTargets.back()._valueBefore = signalTargets.back()._data;
+                    auto ptrFunc1 = functionResetAllPinColor->acquirePointer<std::function<void()> >();
+                    auto ptrFunc2 = functionSetPinColor->acquirePointer<std::function<void(Bits<uint8_t>, SDL_Color)> >();
+                    (*ptrFunc1.second)();
+                    (*ptrFunc2.second)(signalTargets.back()._data, signalTargets.back()._color);
                 }
             });
         }

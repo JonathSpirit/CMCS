@@ -74,6 +74,8 @@ void ThreadUpdate()
     textAuthor.setPosition({0.0f, 480.0f});
     textVersion.setPosition({0.0f, 496.0f});
 
+    std::mutex extensionsCallbackMutex;
+
     auto deviceData = gCoreData->get("C8051_data");
 
     auto data = deviceData->acquirePointer<device::C8051_data>();
@@ -111,6 +113,34 @@ void ThreadUpdate()
         posx=0.0f;
     }
 
+    std::function<void(Bits<uint8_t>, SDL_Color)> functionSetPinColor = [&](Bits<uint8_t> pin, SDL_Color color){
+        std::scoped_lock<std::mutex> lock{extensionsCallbackMutex};
+        for (std::size_t i=0; i<pins.size(); ++i)
+        {
+            for (std::size_t a=0; a<pins[i].size(); ++a)
+            {
+                if (pins[i][a].getBitsStat() == pin)
+                {
+                    pins[i][a].setColor(color);
+                    return;
+                }
+            }
+        }
+    };
+    std::function<void()> functionResetAllPinColor = [&](){
+        std::scoped_lock<std::mutex> lock{extensionsCallbackMutex};
+        for (std::size_t i=0; i<pins.size(); ++i)
+        {
+            for (std::size_t a=0; a<pins[i].size(); ++a)
+            {
+                pins[i][a].setColor({255,255,255,255});
+            }
+        }
+    };
+
+    gCoreData->add(&functionSetPinColor, "CMCS_GUI:functionSetPinColor");
+    gCoreData->add(&functionResetAllPinColor, "CMCS_GUI:functionResetAllPinColor");
+
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
     uint64_t lastTime;
@@ -132,6 +162,7 @@ void ThreadUpdate()
                 gRunning=false;
             }
 
+            extensionsCallbackMutex.lock();
             for (std::size_t i=0; i<pins.size(); ++i)
             {
                 for (std::size_t a=0; a<pins[i].size(); ++a)
@@ -143,11 +174,14 @@ void ThreadUpdate()
                         {
                             auto& stat = pins[i][a].getBitsStat();
                             auto& outputMod = pins[i][a].getBitsOutputMod();
+                            extensionsCallbackMutex.unlock();
                             callback(stat.getData(), stat.getPos(), outputMod.getData(), outputMod.getPos(), event.button);
+                            extensionsCallbackMutex.lock();
                         }
                     }
                 }
             }
+            extensionsCallbackMutex.unlock();
         }
 
         currentTime = SDL_GetTicks64();
@@ -157,6 +191,7 @@ void ThreadUpdate()
 
         SDL_RenderClear(renderer);
 
+        extensionsCallbackMutex.lock();
         for (std::size_t i=0; i<pins.size(); ++i)
         {
             for (std::size_t a=0; a<pins[i].size(); ++a)
@@ -168,6 +203,7 @@ void ThreadUpdate()
             textPort.setString(renderer, "P"+std::to_string(i));
             textPort.draw(renderer);
         }
+        extensionsCallbackMutex.unlock();
 
         textBits.draw(renderer);
         textAuthor.draw(renderer);
@@ -204,6 +240,8 @@ CMCS_API bool CMCSlib_Update()
 CMCS_API void CMCSlib_Uninit()
 {
     gCoreData->remove("CMCS_GUI:pinPressedCallbacks");
+    gCoreData->remove("CMCS_GUI:functionSetPinColor");
+    gCoreData->remove("CMCS_GUI:functionResetAllPinColor");
 
     gRunning = false;
     if (gThread->joinable())

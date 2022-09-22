@@ -24,6 +24,8 @@ public:
     const T* getData() const;
     T* getData();
 
+    bool operator==(const Bits<T>& r) const;
+
     operator bool() const;
 
     Bits<T>& operator=(bool _bit);

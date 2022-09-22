@@ -3,7 +3,8 @@
 Pin::Pin(uint8_t* dataStat, std::size_t posStat,
          uint8_t* dataOutputMod, std::size_t posOutputMod) :
          g_stat(dataStat, posStat),
-         g_outputMod(dataOutputMod, posOutputMod)
+         g_outputMod(dataOutputMod, posOutputMod),
+         g_color({255,255,255,255})
 {
 }
 Pin::Pin(const SDL_FPoint& pos, uint8_t* dataStat, std::size_t posStat,
@@ -57,11 +58,14 @@ bool Pin::update(const SDL_Event& event)
 
     if (this->g_statMouseOn)
     {
-        this->g_sprite.setColorMod({180, 180, 180, 255});
+        this->g_sprite.setColorMod({static_cast<uint8_t>(std::clamp<int>(this->g_color.r-75,0,255)),
+                                    static_cast<uint8_t>(std::clamp<int>(this->g_color.g-75,0,255)),
+                                    static_cast<uint8_t>(std::clamp<int>(this->g_color.b-75,0,255)),
+                                    this->g_color.a});
     }
     else
     {
-        this->g_sprite.setColorMod({255, 255, 255, 255});
+        this->g_sprite.setColorMod(this->g_color);
     }
 
     return returnTrueIfPressed;
@@ -116,6 +120,11 @@ cmcs::Bits<uint8_t>& Pin::getBitsStat()
 cmcs::Bits<uint8_t>& Pin::getBitsOutputMod()
 {
     return this->g_outputMod;
+}
+
+void Pin::setColor(SDL_Color color)
+{
+    this->g_color = color;
 }
 
 void Pin::setOutputMod(bool mod)

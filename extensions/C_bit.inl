@@ -49,6 +49,12 @@ T* Bits<T>::getData()
 }
 
 template<class T>
+bool Bits<T>::operator==(const Bits<T>& r) const
+{
+    return (this->g_data == r.g_data) && (this->g_pos == r.g_pos);
+}
+
+template<class T>
 Bits<T>::operator bool() const
 {
     return ((*this->g_data) & (static_cast<T>(1)<<this->g_pos)) != 0;

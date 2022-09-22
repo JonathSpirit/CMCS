@@ -3,6 +3,7 @@
 
 #include "C_sprite.hpp"
 #include "C_bit.hpp"
+#include <algorithm>
 
 class Pin
 {
@@ -27,6 +28,8 @@ public:
     cmcs::Bits<uint8_t>& getBitsStat();
     cmcs::Bits<uint8_t>& getBitsOutputMod();
 
+    void setColor(SDL_Color color);
+
     void setOutputMod(bool mod);
 
 private:
@@ -40,6 +43,8 @@ private:
     bool g_statMouseOn = false;
     cmcs::Bits<uint8_t> g_stat;
     cmcs::Bits<uint8_t> g_outputMod;
+
+    SDL_Color g_color;
 
     bool g_flag = false;
 };
