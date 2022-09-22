@@ -55,7 +55,7 @@ Bits<T>::operator bool() const
 }
 
 template<class T>
-bool Bits<T>::operator=(const Bits<T>& _bit)
+Bits<T>& Bits<T>::operator=(bool _bit)
 {
     (*this->g_data) &=~ (1<<this->g_pos);
     if (_bit)
@@ -65,51 +65,22 @@ bool Bits<T>::operator=(const Bits<T>& _bit)
     return *this;
 }
 template<class T>
-bool Bits<T>::operator^=(const Bits<T>& _bit)
+Bits<T>& Bits<T>::operator^=(bool _bit)
 {
     (*this->g_data) ^= ((_bit?1:0)<<this->g_pos);
-    return this->operator bool();
-}
-template<class T>
-bool Bits<T>::operator|=(const Bits<T>& _bit)
-{
-    (*this->g_data) |= ((_bit?1:0)<<this->g_pos);
-    return this->operator bool();
-}
-template<class T>
-bool Bits<T>::operator&=(const Bits<T>& _bit)
-{
-    (*this->g_data) &= ((_bit?1:0)<<this->g_pos);
-    return this->operator bool();
-}
-
-template<class T>
-bool Bits<T>::operator=(bool _bit)
-{
-    (*this->g_data) &=~ (1<<this->g_pos);
-    if (_bit)
-    {
-        (*this->g_data) |= (1<<this->g_pos);
-    }
     return *this;
 }
 template<class T>
-bool Bits<T>::operator^=(bool _bit)
-{
-    (*this->g_data) ^= ((_bit?1:0)<<this->g_pos);
-    return this->operator bool();
-}
-template<class T>
-bool Bits<T>::operator|=(bool _bit)
+Bits<T>& Bits<T>::operator|=(bool _bit)
 {
     (*this->g_data) |= ((_bit?1:0)<<this->g_pos);
-    return this->operator bool();
+    return *this;
 }
 template<class T>
-bool Bits<T>::operator&=(bool _bit)
+Bits<T>& Bits<T>::operator&=(bool _bit)
 {
     (*this->g_data) &= ((_bit?1:0)<<this->g_pos);
-    return this->operator bool();
+    return *this;
 }
 
 ///BitsBank

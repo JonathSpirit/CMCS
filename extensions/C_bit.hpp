@@ -16,8 +16,8 @@ public:
     Bits<T>& setPos(std::size_t pos);
     [[nodiscard]] std::size_t getPos() const;
 
-    bool getBit(std::size_t pos) const;
-    bool getBit() const;
+    [[nodiscard]] bool getBit(std::size_t pos) const;
+    [[nodiscard]] bool getBit() const;
 
     void setData(T* data);
 
@@ -26,15 +26,10 @@ public:
 
     operator bool() const;
 
-    bool operator=(const Bits<T>& _bit);
-    bool operator^=(const Bits<T>& _bit);
-    bool operator|=(const Bits<T>& _bit);
-    bool operator&=(const Bits<T>& _bit);
-
-    bool operator=(bool _bit);
-    bool operator^=(bool _bit);
-    bool operator|=(bool _bit);
-    bool operator&=(bool _bit);
+    Bits<T>& operator=(bool _bit);
+    Bits<T>& operator^=(bool _bit);
+    Bits<T>& operator|=(bool _bit);
+    Bits<T>& operator&=(bool _bit);
 
 private:
     T* g_data;
@@ -45,7 +40,6 @@ template<class T>
 class BitBank
 {
     static_assert(std::is_arithmetic<T>::value, "T must be arithmetic");
-
 public:
     BitBank() = default;
     ~BitBank() = default;

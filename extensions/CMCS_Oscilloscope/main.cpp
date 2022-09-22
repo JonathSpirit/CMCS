@@ -15,6 +15,11 @@
 
 #define NUM_OF_PORTS 3
 
+#define EXTENSION_NAME "CMCS_Oscilloscope"
+
+using gPinPressedCallback_t = std::function<void(uint8_t*, std::size_t, uint8_t*, std::size_t, SDL_MouseButtonEvent)>;
+using gPinPressedCallbacks_t = std::vector<gPinPressedCallback_t>;
+
 using namespace cmcs;
 
 ShareableData* gCoreData;
@@ -135,13 +140,13 @@ void ThreadUpdate()
         terminal = terminalData.second;
     }
 
-    terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_Oscilloscope", "info", "hi from CMCS_Oscilloscope extension !\n"));
+    terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "info", "hi from CMCS_Oscilloscope extension !\n"));
 
     auto* window = SDL_CreateWindow("CMCS - Oscilloscope", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, 320,340, SDL_WINDOW_OPENGL);
     auto* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == nullptr)
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_Oscilloscope", "error", "bad renderer: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad renderer: %s\n"), SDL_GetError());
     }
 
     draw::Texture textureOscilloscope;
@@ -150,21 +155,21 @@ void ThreadUpdate()
 
     if (!textureOscilloscope.loadBmp(renderer, "data/libOscilloscope/images/osc.bmp"))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_Oscilloscope", "error", "bad texture: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad texture: %s\n"), SDL_GetError());
     }
     if (!texturePowerOn.loadBmp(renderer, "data/libOscilloscope/images/PowerOn.bmp"))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_Oscilloscope", "error", "bad texture: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad texture: %s\n"), SDL_GetError());
     }
     if (!texturePowerOff.loadBmp(renderer, "data/libOscilloscope/images/PowerOff.bmp"))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_Oscilloscope", "error", "bad texture: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad texture: %s\n"), SDL_GetError());
     }
 
     draw::Font font;
     if (!font.loadFont(CMCS_MAIN_FONT_PATH, 16))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_Oscilloscope", "error", "bad font: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad font: %s\n"), SDL_GetError());
     }
 
     draw::Texture graphTexture{ SDL_CreateTexture(renderer,
@@ -177,7 +182,8 @@ void ThreadUpdate()
     graphImg.fillRect(nullptr, {0,255,0,0});
 
     SDL_Point graphPos;
-    std::vector<OscSignal> osc_target;
+    std::vector<OscSignal> signalTargets;
+    std::mutex extensionsCallbackMutex;
 
     draw::Sprite spriteBackground;
     spriteBackground.setTexture(textureOscilloscope);
@@ -196,8 +202,26 @@ void ThreadUpdate()
     {
         auto data = deviceData->acquirePointer<device::C8051_data>();
 
-        osc_target.push_back({"test1", SDL_Color{255, 0, 0, 255}, {&data.second->_dataRam[0xA0], 4}, 64});
-        osc_target.back()._valueBefore = osc_target.back()._data;
+        signalTargets.push_back({"test1", SDL_Color{255, 0, 0, 255}, {&data.second->_dataRam[0xA0], 4}, 64});
+        signalTargets.back()._valueBefore = signalTargets.back()._data;
+    }
+
+    {
+        auto callbacks = gCoreData->get("CMCS_GUI:pinPressedCallbacks");
+        if (callbacks)
+        {
+            auto data = callbacks->acquirePointer<gPinPressedCallbacks_t>();
+
+            data.second->push_back([&](uint8_t* dataStat, std::size_t posStat,
+                    uint8_t* dataOutputMod, std::size_t posOutputMod, SDL_MouseButtonEvent event){
+                std::scoped_lock<std::mutex> lock{extensionsCallbackMutex};
+                if (event.button == SDL_BUTTON_RIGHT)
+                {
+                    signalTargets.back()._data = {dataStat, posStat};
+                    signalTargets.back()._valueBefore = signalTargets.back()._data;
+                }
+            });
+        }
     }
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -223,9 +247,10 @@ void ThreadUpdate()
 
         SDL_RenderClear(renderer);
 
-        for (std::size_t i=0; i<osc_target.size(); ++i)
+        extensionsCallbackMutex.lock();
+        for (std::size_t i=0; i < signalTargets.size(); ++i)
         {
-            bool actualValue = osc_target[i]._data;
+            bool actualValue = signalTargets[i]._data;
 
             textTime.setString(renderer, "Wouaouh");
             //osc_textTime.setString( (std::string)"Th : "+/*fge::string::ToStr(_osc_th_before[pi])+*/"[ms] Tb : "+/*fge::string::ToStr(_osc_tb_before[pi])+*/"[ms] Freq : "+/*ValueToScience(1/(_osc_th_before[pi]*pow(10,-3)+_osc_tb_before[pi]*pow(10,-3)+0.01f))+*/"Hz]" );
@@ -242,9 +267,9 @@ void ThreadUpdate()
 
             if (actualValue)
             {//haut
-                if (osc_target[i]._valueBefore)
+                if (signalTargets[i]._valueBefore)
                 {//ligne droite haut
-                    graphImg.setPixel(graphPos.x, osc_target[i]._posy-20, osc_target[i]._color);
+                    graphImg.setPixel(graphPos.x, signalTargets[i]._posy - 20, signalTargets[i]._color);
                 }
                 else
                 {//passage vers le haut
@@ -255,15 +280,15 @@ void ThreadUpdate()
                     _osc_time[pi] = std::chrono::_V2::high_resolution_clock::now();*/
                     for (int y=0; y<20; ++y)
                     {
-                        graphImg.setPixel(graphPos.x, osc_target[i]._posy-y, osc_target[i]._color);
+                        graphImg.setPixel(graphPos.x, signalTargets[i]._posy - y, signalTargets[i]._color);
                     }
                 }
             }
             else
             {//bas
-                if (!osc_target[i]._valueBefore)
+                if (!signalTargets[i]._valueBefore)
                 {//ligne droite bas
-                    graphImg.setPixel(graphPos.x, osc_target[i]._posy, osc_target[i]._color);
+                    graphImg.setPixel(graphPos.x, signalTargets[i]._posy, signalTargets[i]._color);
                 }
                 else
                 {//passage vers le bas
@@ -274,13 +299,15 @@ void ThreadUpdate()
                     _osc_time[pi] = std::chrono::_V2::high_resolution_clock::now();*/
                     for (int y=0; y<20; ++y)
                     {
-                        graphImg.setPixel(graphPos.x, osc_target[i]._posy-20+y, osc_target[i]._color);
+                        graphImg.setPixel(graphPos.x, signalTargets[i]._posy - 20 + y, signalTargets[i]._color);
                     }
                 }
             }
 
-            osc_target[i]._valueBefore = actualValue;
+            signalTargets[i]._valueBefore = actualValue;
         }
+        extensionsCallbackMutex.unlock();
+
         ++graphPos.x;
         graphPos.x = graphPos.x%320;
 
@@ -306,7 +333,7 @@ CMCS_API void CMCSlib_Init(ShareableData& data)
 
 CMCS_API ExtensionIdentity CMCSlib_retrieveExtensionIdentity()
 {
-    return {"CMCS_Oscilloscope", "V1.0", "Guillaume G."};
+    return {EXTENSION_NAME, "V1.0", "Guillaume G."};
 }
 
 CMCS_API bool CMCSlib_Update()

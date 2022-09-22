@@ -18,7 +18,7 @@ ShareableData* gCoreData;
 std::thread* gThread;
 bool gRunning;
 std::shared_ptr<SharedData> gPinPressedCallbacks;
-using gPinPressedCallbacks_t = std::vector<std::function<void(uint8_t*, std::size_t, uint8_t*, std::size_t)> >;
+using gPinPressedCallbacks_t = std::vector<std::function<void(uint8_t*, std::size_t, uint8_t*, std::size_t, SDL_MouseButtonEvent)> >;
 
 void ThreadUpdate()
 {
@@ -118,6 +118,12 @@ void ThreadUpdate()
 
     while (gRunning)
     {
+        {//Push an empty event
+            SDL_Event emptyEvent;
+            emptyEvent.user = {SDL_USEREVENT, SDL_GetTicks(), SDL_GetWindowID(window), 0, nullptr, nullptr};
+            SDL_PushEvent(&emptyEvent);
+        }
+
         SDL_Event event;
         while ( SDL_PollEvent(&event) )
         {
@@ -125,6 +131,7 @@ void ThreadUpdate()
             {
                 gRunning=false;
             }
+
             for (std::size_t i=0; i<pins.size(); ++i)
             {
                 for (std::size_t a=0; a<pins[i].size(); ++a)
@@ -136,7 +143,7 @@ void ThreadUpdate()
                         {
                             auto& stat = pins[i][a].getBitsStat();
                             auto& outputMod = pins[i][a].getBitsOutputMod();
-                            callback(stat.getData(), stat.getPos(), outputMod.getData(), outputMod.getPos());
+                            callback(stat.getData(), stat.getPos(), outputMod.getData(), outputMod.getPos(), event.button);
                         }
                     }
                 }

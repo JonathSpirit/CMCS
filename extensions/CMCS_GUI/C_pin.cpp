@@ -44,7 +44,7 @@ bool Pin::update(const SDL_Event& event)
                     this->g_stat = !this->g_stat;
                 }
             }
-            returnTrueIfPressed = true;
+            returnTrueIfPressed = this->g_statMouseOn;
         }
     }
     else if (event.type == SDL_MOUSEBUTTONUP)
