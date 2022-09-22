@@ -16,6 +16,8 @@ public:
 
     bool loadBmp(SDL_Renderer* renderer, const char* path);
 
+    bool updateTextureFromSurface(SDL_Surface* surface);
+
     void set(SDL_Texture* texture);
     [[nodiscard]] SDL_Texture* get() const;
 

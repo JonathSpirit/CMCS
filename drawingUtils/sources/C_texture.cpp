@@ -28,6 +28,23 @@ bool Texture::loadBmp(SDL_Renderer* renderer, const char* path)
     return true;
 }
 
+bool Texture::updateTextureFromSurface(SDL_Surface* surface)
+{
+    SDL_Surface* lockedSurface;
+    if ( SDL_LockTextureToSurface(this->g_texture.get(), nullptr, &lockedSurface) != 0 )
+    {
+        return false;
+    }
+
+    if ( SDL_BlitSurface(surface, nullptr, lockedSurface, nullptr) != 0 )
+    {
+        SDL_UnlockTexture(this->g_texture.get());
+        return false;
+    }
+    SDL_UnlockTexture(this->g_texture.get());
+    return true;
+}
+
 void Texture::set(SDL_Texture* texture)
 {
     this->g_texture.reset(texture, Texture::textureDeleter);

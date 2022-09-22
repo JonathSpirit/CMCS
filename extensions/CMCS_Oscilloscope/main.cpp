@@ -2,6 +2,7 @@
 
 #include "C_text.hpp"
 #include "C_sprite.hpp"
+#include "C_surface.hpp"
 #include <replxx.hxx>
 
 #include <string>
@@ -126,23 +127,6 @@ bool API KMCSlib_Update( sf::RenderWindow& main_screen, fge::Event& evt )
 }
 #endif
 
-void SetPixel(SDL_Surface* surface, int x, int y, uint32_t pixel)
-{
-    uint32_t* const target_pixel = (uint32_t*) ((uint8_t*) surface->pixels
-            + y * surface->pitch
-            + x * surface->format->BytesPerPixel);
-    *target_pixel = pixel;
-}
-void UpdateTexture(SDL_Texture* texture, SDL_Surface* surface)
-{
-    SDL_Surface* lockedSurface;
-    SDL_LockTextureToSurface(texture, nullptr, &lockedSurface);
-
-    SDL_BlitSurface(surface, nullptr, lockedSurface, nullptr);
-
-    SDL_UnlockTexture(texture);
-}
-
 void ThreadUpdate()
 {
     replxx::Replxx* terminal;
@@ -187,10 +171,10 @@ void ThreadUpdate()
                                                   SDL_PIXELFORMAT_RGBA32,
                                                   SDL_TEXTUREACCESS_STREAMING,
                                                   320, 340) };
-    SDL_Surface* graphImg = SDL_CreateRGBSurfaceWithFormat(0, 320,340, 32, SDL_PIXELFORMAT_RGBA32);
-    SDL_SetSurfaceBlendMode(graphImg, SDL_BLENDMODE_NONE);
+    draw::Surface graphImg{SDL_CreateRGBSurfaceWithFormat(0, 320,340, 32, SDL_PIXELFORMAT_RGBA32)};
+    SDL_SetSurfaceBlendMode(graphImg.get(), SDL_BLENDMODE_NONE);
     SDL_SetTextureBlendMode(graphTexture.get(), SDL_BLENDMODE_BLEND);
-    SDL_FillRect(graphImg, nullptr, SDL_MapRGBA(graphImg->format,0,255,0,0));
+    graphImg.fillRect(nullptr, {0,255,0,0});
 
     SDL_Point graphPos;
     std::vector<OscSignal> osc_target;
@@ -252,7 +236,7 @@ void ThreadUpdate()
             {
                 for (int x=0; x<6; ++x)
                 {
-                    SetPixel(graphImg, (graphPos.x+x)%320, y, SDL_MapRGBA(graphImg->format,255,255,255,0));
+                    graphImg.setPixel((graphPos.x+x)%320, y, {255,255,255,0});
                 }
             }
 
@@ -260,11 +244,7 @@ void ThreadUpdate()
             {//haut
                 if (osc_target[i]._valueBefore)
                 {//ligne droite haut
-                    SetPixel(graphImg, graphPos.x, osc_target[i]._posy-20, SDL_MapRGBA(graphImg->format,
-                                                                                       osc_target[i]._color.r,
-                                                                                       osc_target[i]._color.g,
-                                                                                       osc_target[i]._color.b,
-                                                                                       osc_target[i]._color.a));
+                    graphImg.setPixel(graphPos.x, osc_target[i]._posy-20, osc_target[i]._color);
                 }
                 else
                 {//passage vers le haut
@@ -275,11 +255,7 @@ void ThreadUpdate()
                     _osc_time[pi] = std::chrono::_V2::high_resolution_clock::now();*/
                     for (int y=0; y<20; ++y)
                     {
-                        SetPixel(graphImg, graphPos.x, osc_target[i]._posy-y, SDL_MapRGBA(graphImg->format,
-                                                                                           osc_target[i]._color.r,
-                                                                                           osc_target[i]._color.g,
-                                                                                           osc_target[i]._color.b,
-                                                                                           osc_target[i]._color.a));
+                        graphImg.setPixel(graphPos.x, osc_target[i]._posy-y, osc_target[i]._color);
                     }
                 }
             }
@@ -287,11 +263,7 @@ void ThreadUpdate()
             {//bas
                 if (!osc_target[i]._valueBefore)
                 {//ligne droite bas
-                    SetPixel(graphImg, graphPos.x, osc_target[i]._posy, SDL_MapRGBA(graphImg->format,
-                                                                                      osc_target[i]._color.r,
-                                                                                      osc_target[i]._color.g,
-                                                                                      osc_target[i]._color.b,
-                                                                                      osc_target[i]._color.a));
+                    graphImg.setPixel(graphPos.x, osc_target[i]._posy, osc_target[i]._color);
                 }
                 else
                 {//passage vers le bas
@@ -302,11 +274,7 @@ void ThreadUpdate()
                     _osc_time[pi] = std::chrono::_V2::high_resolution_clock::now();*/
                     for (int y=0; y<20; ++y)
                     {
-                        SetPixel(graphImg, graphPos.x, osc_target[i]._posy-20+y, SDL_MapRGBA(graphImg->format,
-                                                                                        osc_target[i]._color.r,
-                                                                                        osc_target[i]._color.g,
-                                                                                        osc_target[i]._color.b,
-                                                                                        osc_target[i]._color.a));
+                        graphImg.setPixel(graphPos.x, osc_target[i]._posy-20+y, osc_target[i]._color);
                     }
                 }
             }
@@ -319,13 +287,11 @@ void ThreadUpdate()
         //_myScreen.setPosition(_myScreen.getPosition() - sf::Vector2i(330,0));
 
         spriteBackground.draw(renderer);
-        UpdateTexture(graphTexture.get(), graphImg);
+        graphTexture.updateTextureFromSurface(graphImg.get());
         spriteGraph.draw(renderer);
 
         SDL_RenderPresent(renderer);
     }
-
-    SDL_FreeSurface(graphImg);
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

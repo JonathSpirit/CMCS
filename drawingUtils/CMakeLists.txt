@@ -17,6 +17,8 @@ target_sources(${PROJECT_NAME} PRIVATE sources/C_text.cpp)
 target_sources(${PROJECT_NAME} PRIVATE includes/C_text.hpp)
 target_sources(${PROJECT_NAME} PRIVATE sources/C_texture.cpp)
 target_sources(${PROJECT_NAME} PRIVATE includes/C_texture.hpp)
+target_sources(${PROJECT_NAME} PRIVATE sources/C_surface.cpp)
+target_sources(${PROJECT_NAME} PRIVATE includes/C_surface.hpp)
 
 target_sources(${PROJECT_NAME} PRIVATE includes/drawingUtilsExtern.hpp)
 
