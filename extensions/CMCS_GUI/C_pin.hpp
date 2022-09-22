@@ -13,7 +13,7 @@ public:
     Pin(const SDL_FPoint& pos, uint8_t* dataStat, std::size_t posStat,
         uint8_t* dataOutputMod, std::size_t posOutputMod);
 
-    bool update(const SDL_Event& event);
+    void update(const SDL_Event& event);
     void draw(SDL_Renderer* renderer) const;
 
     void setPosition(const SDL_FPoint& pos);
@@ -24,6 +24,7 @@ public:
 
     void setStat(bool stat);
     bool getStat() const;
+    bool isMouseOn() const;
 
     cmcs::Bits<uint8_t>& getBitsStat();
     cmcs::Bits<uint8_t>& getBitsOutputMod();
@@ -45,8 +46,6 @@ private:
     cmcs::Bits<uint8_t> g_outputMod;
 
     SDL_Color g_color;
-
-    bool g_flag = false;
 };
 
 #endif // _CMCSGUI_C_PIN_HPP_INCLUDED
