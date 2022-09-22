@@ -12,6 +12,8 @@
 
 #define NUM_OF_PORTS 3
 
+#define EXTENSION_NAME "CMCS_GUI"
+
 using namespace cmcs;
 
 ShareableData* gCoreData;
@@ -28,13 +30,13 @@ void ThreadUpdate()
         terminal = terminalData.second;
     }
 
-    terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_GUI", "info", "hi from CMCS_GUI extension !\n"));
+    terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "info", "hi from CMCS_GUI extension !\n"));
 
     auto* window = SDL_CreateWindow("CMCS - GUI", SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED, 512,512, SDL_WINDOW_OPENGL);
     auto* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (renderer == nullptr)
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_GUI", "error", "bad renderer: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad renderer: %s\n"), SDL_GetError());
     }
 
     draw::Texture textureLedOff;
@@ -44,25 +46,25 @@ void ThreadUpdate()
 
     if (!textureLedOff.loadBmp(renderer, "data/libGUI/images/LedOff.bmp"))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_GUI", "error", "bad texture: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad texture: %s\n"), SDL_GetError());
     }
     if (!textureLedOn.loadBmp(renderer, "data/libGUI/images/LedOn.bmp"))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_GUI", "error", "bad texture: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad texture: %s\n"), SDL_GetError());
     }
     if (!textureSwitchOff.loadBmp(renderer, "data/libGUI/images/SwitchOff.bmp"))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_GUI", "error", "bad texture: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad texture: %s\n"), SDL_GetError());
     }
     if (!textureSwitchOn.loadBmp(renderer, "data/libGUI/images/SwitchOn.bmp"))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_GUI", "error", "bad texture: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad texture: %s\n"), SDL_GetError());
     }
 
     draw::Font font;
     if (!font.loadFont(CMCS_MAIN_FONT_PATH, 16))
     {
-        terminal->print(CMCS_EXT_PRINT_FORMAT("CMCS_GUI", "error", "bad font: %s\n"), SDL_GetError());
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "bad font: %s\n"), SDL_GetError());
     }
 
     draw::Text textPort(renderer, font, "X");
@@ -77,22 +79,27 @@ void ThreadUpdate()
     std::mutex extensionsCallbackMutex;
 
     auto deviceData = gCoreData->get("C8051_data");
-
-    auto data = deviceData->acquirePointer<device::C8051_data>();
-
-    uint8_t* dataPorts[NUM_OF_PORTS] =
+    if (!deviceData)
     {
-        &data.second->_dataRam[0x80],
-        &data.second->_dataRam[0x90],
-        &data.second->_dataRam[0xA0]
-    };
-    uint8_t* dataPortOutputModes[NUM_OF_PORTS] =
-    {
-        &data.second->_dataRam[0xA4],
-        &data.second->_dataRam[0xA5],
-        &data.second->_dataRam[0xA6]
-    };
-    data.first.unlock();
+        terminal->print(CMCS_EXT_PRINT_FORMAT(EXTENSION_NAME, "error", "can't retrieve device data !\n"));
+        std::terminate();
+    }
+
+    std::array<uint8_t*, NUM_OF_PORTS> dataPorts = {nullptr};
+    std::array<uint8_t*, NUM_OF_PORTS> dataPortOutputModes = {nullptr};
+
+    deviceData->acquirePointerAndThen<device::C8051_data>([&](device::C8051_data* data){
+        dataPorts = {
+            &data->_dataRam[0x80],
+            &data->_dataRam[0x90],
+            &data->_dataRam[0xA0]
+        };
+        dataPortOutputModes = {
+            &data->_dataRam[0xA4],
+            &data->_dataRam[0xA5],
+            &data->_dataRam[0xA6]
+        };
+    });
 
     std::vector<std::vector<Pin> > pins;
 
@@ -148,12 +155,6 @@ void ThreadUpdate()
 
     while (gRunning)
     {
-        {//Push an empty event
-            SDL_Event emptyEvent;
-            emptyEvent.user = {SDL_USEREVENT, SDL_GetTicks(), SDL_GetWindowID(window), 0, nullptr, nullptr};
-            SDL_PushEvent(&emptyEvent);
-        }
-
         SDL_Event event;
         while ( SDL_PollEvent(&event) )
         {
@@ -165,19 +166,23 @@ void ThreadUpdate()
             extensionsCallbackMutex.lock();
             for (std::size_t i=0; i<pins.size(); ++i)
             {
-                for (std::size_t a=0; a<pins[i].size(); ++a)
+                for (auto& pin : pins[i])
                 {
-                    if ( pins[i][a].update(event) )
+                    pin.update(event);
+
+                    if (pin.isMouseOn() && event.type == SDL_MOUSEBUTTONDOWN)
                     {//The button has been pressed
-                        auto callbacks = gPinPressedCallbacks->acquirePointer<gPinPressedCallbacks_t>();
-                        for (auto& callback : *callbacks.second)
-                        {
-                            auto& stat = pins[i][a].getBitsStat();
-                            auto& outputMod = pins[i][a].getBitsOutputMod();
-                            extensionsCallbackMutex.unlock();
-                            callback(stat.getData(), stat.getPos(), outputMod.getData(), outputMod.getPos(), event.button);
-                            extensionsCallbackMutex.lock();
-                        }
+                        gPinPressedCallbacks->acquirePointerAndThen<gPinPressedCallbacks_t>([&](gPinPressedCallbacks_t* callbacks){
+                            for (auto& callback : *callbacks)
+                            {
+                                auto& stat = pin.getBitsStat();
+                                auto& outputMod = pin.getBitsOutputMod();
+
+                                extensionsCallbackMutex.unlock();
+                                callback(stat.getData(), stat.getPos(), outputMod.getData(), outputMod.getPos(), event.button);
+                                extensionsCallbackMutex.lock();
+                            }
+                        });
                     }
                 }
             }
@@ -194,9 +199,9 @@ void ThreadUpdate()
         extensionsCallbackMutex.lock();
         for (std::size_t i=0; i<pins.size(); ++i)
         {
-            for (std::size_t a=0; a<pins[i].size(); ++a)
+            for (auto& pin : pins[i])
             {
-                pins[i][a].draw(renderer);
+                pin.draw(renderer);
             }
 
             textPort.setPosition({pins[i].back().getPosition().x + 32, pins[i].back().getPosition().y});
@@ -229,7 +234,7 @@ CMCS_API void CMCSlib_Init(ShareableData& data)
 
 CMCS_API ExtensionIdentity CMCSlib_retrieveExtensionIdentity()
 {
-    return {"CMCS_GUI", "V1.0", "Guillaume G."};
+    return {EXTENSION_NAME, "V1.0", "Guillaume G."};
 }
 
 CMCS_API bool CMCSlib_Update()

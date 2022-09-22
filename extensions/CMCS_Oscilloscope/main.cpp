@@ -5,7 +5,6 @@
 #include "C_surface.hpp"
 #include <replxx.hxx>
 
-#include <string>
 #include <vector>
 #include <thread>
 #include <functional>
@@ -25,15 +24,6 @@ using namespace cmcs;
 ShareableData* gCoreData;
 std::thread* gThread;
 bool gRunning;
-/**
-typedef void (*CoreFunc_SetPortNum)(unsigned char);
-typedef unsigned char& (*CoreFunc_GetPort)(unsigned char);
-typedef unsigned char& (*CoreFunc_GetPortType)(unsigned char);
-typedef unsigned char& (*CoreFunc_GetPortHide)(unsigned char);
-
-typedef ExtensionIdentity (*FunctionInitCall)( const ExtensionData& );
-typedef void (*FunctionUninitCall)(void);
-typedef bool (*FunctionUpdateCall)( sf::RenderWindow&, fge::Event&);**/
 
 struct OscSignal
 {
@@ -199,38 +189,32 @@ void ThreadUpdate()
     textTime.setFont(renderer, font, true);
 
     auto deviceData = gCoreData->get("C8051_data");
-    {
-        auto data = deviceData->acquirePointer<device::C8051_data>();
 
-        signalTargets.push_back({"test1", SDL_Color{255, 0, 0, 255}, {&data.second->_dataRam[0xA0], 4}, 64});
+    deviceData->acquirePointerAndThen<device::C8051_data>([&](device::C8051_data* data){
+        signalTargets.push_back({"test1", SDL_Color{255, 0, 0, 255}, {&data->_dataRam[0xA0], 4}, 64});
         signalTargets.back()._valueBefore = signalTargets.back()._data;
-    }
+    });
 
-    std::this_thread::sleep_for(std::chrono::milliseconds{2000}); ///TODO remove that
-    auto functionResetAllPinColor = gCoreData->get("CMCS_GUI:functionResetAllPinColor");
-    auto functionSetPinColor = gCoreData->get("CMCS_GUI:functionSetPinColor");
+    auto functionResetAllPinColor = gCoreData->waitFor("CMCS_GUI:functionResetAllPinColor");
+    auto functionSetPinColor = gCoreData->waitFor("CMCS_GUI:functionSetPinColor");
+    auto pinPressedCallbacks = gCoreData->waitFor("CMCS_GUI:pinPressedCallbacks");
 
-    {
-        auto callbacks = gCoreData->get("CMCS_GUI:pinPressedCallbacks");
-        if (callbacks)
-        {
-            auto data = callbacks->acquirePointer<gPinPressedCallbacks_t>();
-
-            data.second->push_back([&](uint8_t* dataStat, std::size_t posStat,
-                    uint8_t* dataOutputMod, std::size_t posOutputMod, SDL_MouseButtonEvent event){
-                std::scoped_lock<std::mutex> lock{extensionsCallbackMutex};
-                if (event.button == SDL_BUTTON_RIGHT)
-                {
-                    signalTargets.back()._data = {dataStat, posStat};
-                    signalTargets.back()._valueBefore = signalTargets.back()._data;
-                    auto ptrFunc1 = functionResetAllPinColor->acquirePointer<std::function<void()> >();
-                    auto ptrFunc2 = functionSetPinColor->acquirePointer<std::function<void(Bits<uint8_t>, SDL_Color)> >();
-                    (*ptrFunc1.second)();
-                    (*ptrFunc2.second)(signalTargets.back()._data, signalTargets.back()._color);
-                }
-            });
-        }
-    }
+    pinPressedCallbacks->acquirePointerAndThen<gPinPressedCallbacks_t>([&](gPinPressedCallbacks_t* data){
+        data->push_back([&](uint8_t* dataStat, std::size_t posStat,
+                            uint8_t* dataOutputMod, std::size_t posOutputMod,
+                            SDL_MouseButtonEvent event){
+            std::scoped_lock<std::mutex> lock{extensionsCallbackMutex};
+            if (event.button == SDL_BUTTON_RIGHT)
+            {
+                signalTargets.back()._data = {dataStat, posStat};
+                signalTargets.back()._valueBefore = signalTargets.back()._data;
+                auto ptrFunc1 = functionResetAllPinColor->acquirePointer<std::function<void()> >();
+                auto ptrFunc2 = functionSetPinColor->acquirePointer<std::function<void(Bits<uint8_t>, SDL_Color)> >();
+                (*ptrFunc1.second)();
+                (*ptrFunc2.second)(signalTargets.back()._data, signalTargets.back()._color);
+            }
+        });
+    });
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 

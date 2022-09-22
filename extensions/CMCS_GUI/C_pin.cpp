@@ -14,10 +14,8 @@ Pin::Pin(const SDL_FPoint& pos, uint8_t* dataStat, std::size_t posStat,
     this->setPosition(pos);
 }
 
-bool Pin::update(const SDL_Event& event)
+void Pin::update(const SDL_Event& event)
 {
-    bool returnTrueIfPressed = false;
-
     if (event.type == SDL_MOUSEMOTION)
     {
         SDL_FPoint mousePos = {(float)event.motion.x, (float)event.motion.y};
@@ -35,24 +33,12 @@ bool Pin::update(const SDL_Event& event)
     }
     else if (event.type == SDL_MOUSEBUTTONDOWN)
     {
-        if (!this->g_flag)
-        {
-            this->g_flag = true;
-            if (event.button.button == SDL_BUTTON_LEFT)
-            {
-                if ( this->g_statMouseOn )
-                {
-                    this->g_stat = !this->g_stat;
-                }
-            }
-            returnTrueIfPressed = this->g_statMouseOn;
-        }
-    }
-    else if (event.type == SDL_MOUSEBUTTONUP)
-    {
         if (event.button.button == SDL_BUTTON_LEFT)
         {
-            this->g_flag = false;
+            if ( this->g_statMouseOn )
+            {
+                this->g_stat = !this->g_stat;
+            }
         }
     }
 
@@ -67,8 +53,6 @@ bool Pin::update(const SDL_Event& event)
     {
         this->g_sprite.setColorMod(this->g_color);
     }
-
-    return returnTrueIfPressed;
 }
 void Pin::draw(SDL_Renderer* renderer) const
 {
@@ -111,6 +95,10 @@ void Pin::setStat(bool stat)
 bool Pin::getStat() const
 {
     return this->g_stat;
+}
+bool Pin::isMouseOn() const
+{
+    return this->g_statMouseOn;
 }
 
 cmcs::Bits<uint8_t>& Pin::getBitsStat()
