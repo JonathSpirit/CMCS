@@ -23,6 +23,9 @@ public:
     template<class T>
     bool acquirePointerAndThen(const std::function<void(T*)>& function);
 
+    template<class T, class ...TArgs>
+    bool acquirePointerAndCall(TArgs... args);
+
     void invalidate();
     bool isValid() const;
 

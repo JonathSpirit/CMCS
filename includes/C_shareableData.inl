@@ -33,6 +33,23 @@ bool SharedData::acquirePointerAndThen(const std::function<void(T*)>& function)
     return false;
 }
 
+template<class T, class ...TArgs>
+bool SharedData::acquirePointerAndCall(TArgs... args)
+{
+    std::scoped_lock<std::mutex> lock{this->g_mutex};
+    if (typeid(T).hash_code() == this->g_typeHash && typeid(T).name() == this->g_typeName)
+    {
+        auto* function = reinterpret_cast<T*>(this->g_ptr);
+
+        if (*function)
+        {
+            (*function)(args...);
+            return true;
+        }
+    }
+    return false;
+}
+
 inline void SharedData::invalidate()
 {
     std::scoped_lock<std::mutex> lock{this->g_mutex};

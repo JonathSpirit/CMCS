@@ -208,10 +208,8 @@ void ThreadUpdate()
             {
                 signalTargets.back()._data = {dataStat, posStat};
                 signalTargets.back()._valueBefore = signalTargets.back()._data;
-                auto ptrFunc1 = functionResetAllPinColor->acquirePointer<std::function<void()> >();
-                auto ptrFunc2 = functionSetPinColor->acquirePointer<std::function<void(Bits<uint8_t>, SDL_Color)> >();
-                (*ptrFunc1.second)();
-                (*ptrFunc2.second)(signalTargets.back()._data, signalTargets.back()._color);
+                functionResetAllPinColor->acquirePointerAndCall<std::function<void()> >();
+                functionSetPinColor->acquirePointerAndCall<std::function<void(Bits<uint8_t>, SDL_Color)> >(signalTargets.back()._data, signalTargets.back()._color);
             }
         });
     });
