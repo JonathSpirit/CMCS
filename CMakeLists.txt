@@ -13,12 +13,12 @@ FetchContent_Declare(replxx
 
 FetchContent_Declare(SDL2
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG release-2.24.0
+        GIT_TAG release-2.26.5
         )
 
 FetchContent_Declare(SDL2_ttf
         GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf
-        GIT_TAG main
+        GIT_TAG release-2.20.2
         )
 
 FetchContent_MakeAvailable(replxx)
