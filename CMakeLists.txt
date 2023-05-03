@@ -42,11 +42,11 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE includes/simul_ext.hpp)
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE sources/simul_math.cpp)
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE includes/simul_main.hpp)
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE includes/C_shareableData.inl)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE includes/C_shareableData.hpp)
-
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE sources/simul_C8051_opcode.cpp)
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE includes/simul_C8051_opcode.hpp)
+
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE extensions/C_shareableData.inl)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE extensions/C_shareableData.hpp)
 
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE extensions/C_bit.inl)
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE extensions/C_bit.hpp)
